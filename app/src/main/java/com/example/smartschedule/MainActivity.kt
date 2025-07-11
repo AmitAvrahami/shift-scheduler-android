@@ -1,6 +1,7 @@
 package com.example.smartschedule
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -14,6 +15,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.example.smartschedule.domain.models.Employee
 import com.example.smartschedule.domain.models.Schedule
 import com.example.smartschedule.domain.models.Shift
+import com.example.smartschedule.domain.models.ShiftType
+import com.example.smartschedule.domain.validation.ShiftValidation
 import com.example.smartschedule.ui.theme.SmartScheduleTheme
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -56,6 +59,7 @@ private fun testDataModels() {
         id = "shift1",
         startTime = LocalDateTime.of(2024, 1, 15, 6, 45),
         endTime = LocalDateTime.of(2024, 1, 15, 14, 45),
+        shiftType = ShiftType.MORNING,
         assignedEmployeeId = employee.id
     )
 
@@ -65,8 +69,10 @@ private fun testDataModels() {
         shifts = listOf(shift)
     )
 
-    println("Created Schedule with ${schedule.shifts.size} shifts")
-    println("Unassigned shifts count: ${schedule.getUnassignedShiftsCount()}")
+    Log.d("ShiftTest", "המשמרת תקינה: ${ShiftValidation.isValidShift(shift)}")
+    Log.d("ShiftTest", "העובד יכול לעבוד: ${ShiftValidation.canEmployeeWork(employee, shift)}")
+    Log.d("ShiftTest", "אורך המשמרת: ${ShiftValidation.getShiftDurationHours(shift)} שעות")
+    Log.d("ShiftTest", "משמרת סטנדרטית: ${ShiftValidation.isStandardShift(shift)}")
 }
 
 @Preview(showBackground = true)
