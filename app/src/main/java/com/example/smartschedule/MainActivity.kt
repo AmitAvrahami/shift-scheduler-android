@@ -17,6 +17,7 @@ import com.example.smartschedule.domain.models.Schedule
 import com.example.smartschedule.domain.models.Shift
 import com.example.smartschedule.domain.models.ShiftType
 import com.example.smartschedule.domain.validation.ShiftValidation
+import com.example.smartschedule.presentation.employee.EmployeeListScreen
 import com.example.smartschedule.ui.theme.SmartScheduleTheme
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -29,10 +30,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             SmartScheduleTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "First Level complete",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                    EmployeeListScreen(modifier = Modifier.padding(innerPadding))
                 }
             }
         }
