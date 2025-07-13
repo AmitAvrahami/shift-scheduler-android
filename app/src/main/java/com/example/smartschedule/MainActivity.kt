@@ -24,6 +24,7 @@ import com.example.smartschedule.domain.validation.ShiftValidation
 import com.example.smartschedule.presentation.employee.AddEmployeeScreen
 import com.example.smartschedule.presentation.employee.EmployeeListScreen
 import com.example.smartschedule.presentation.navigation.Routes
+import com.example.smartschedule.presentation.shift.AddShiftScreen
 import com.example.smartschedule.presentation.shift.ShiftListScreen
 import com.example.smartschedule.ui.theme.SmartScheduleTheme
 import java.time.LocalDate
@@ -49,6 +50,29 @@ class MainActivity : ComponentActivity() {
             name = "דוד לוי",
             email = "david@example.com",
             employeeNumber = "11111"
+        )
+    )
+    private val shiftsList = mutableStateListOf(
+        Shift(
+            id = "1",
+            startTime = LocalDateTime.of(2024, 1, 15, 6, 45),
+            endTime = LocalDateTime.of(2024, 1, 15, 14, 45),
+            shiftType = ShiftType.MORNING,
+            assignedEmployeeId = "emp1"
+        ),
+        Shift(
+            id = "2",
+            startTime = LocalDateTime.of(2024, 1, 15, 14, 45),
+            endTime = LocalDateTime.of(2024, 1, 15, 22, 45),
+            shiftType = ShiftType.AFTERNOON,
+            assignedEmployeeId = null
+        ),
+        Shift(
+            id = "3",
+            startTime = LocalDateTime.of(2024, 1, 15, 22, 45),
+            endTime = LocalDateTime.of(2024, 1, 16, 6, 45),
+            shiftType = ShiftType.NIGHT,
+            assignedEmployeeId = "emp2"
         )
     )
 
@@ -92,7 +116,33 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable(Routes.SHIFT_LIST) {
-                            ShiftListScreen(modifier = Modifier.padding(innerPadding))
+                            ShiftListScreen(
+                                modifier = Modifier.padding(innerPadding),
+                                shifts = shiftsList,
+                                onAddShiftClick = {
+                                    navController.navigate(Routes.ADD_SHIFT)
+                                }
+                            )
+                        }
+                        composable(Routes.ADD_SHIFT) {
+                            AddShiftScreen(
+                                modifier = Modifier.padding(innerPadding),
+                                onSaveClick = {
+                                    val newShift = Shift(
+                                        id = (shiftsList.size + 1).toString(),
+                                        startTime = LocalDateTime.of(2024, 1, 15, 6, 45), // זמני - נשפר בהמשך
+                                        endTime = LocalDateTime.of(2024, 1, 15, 14, 45),
+                                        shiftType = ShiftType.MORNING,
+                                        assignedEmployeeId = null
+                                    )
+                                    shiftsList.add(newShift)
+                                    Log.d("Add Shift","נוצרה משמרת חדשה")
+                                    navController.popBackStack()
+                                },
+                                onBackClick = {
+                                    navController.popBackStack()
+                                }
+                            )
                         }
                     }
                 }
