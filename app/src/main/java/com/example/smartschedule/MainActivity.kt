@@ -10,27 +10,91 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.example.smartschedule.domain.models.Employee
 import com.example.smartschedule.domain.models.Schedule
 import com.example.smartschedule.domain.models.Shift
 import com.example.smartschedule.domain.models.ShiftType
 import com.example.smartschedule.domain.validation.ShiftValidation
+import com.example.smartschedule.presentation.employee.AddEmployeeScreen
 import com.example.smartschedule.presentation.employee.EmployeeListScreen
+import com.example.smartschedule.presentation.navigation.Routes
+import com.example.smartschedule.presentation.shift.ShiftListScreen
 import com.example.smartschedule.ui.theme.SmartScheduleTheme
 import java.time.LocalDate
 import java.time.LocalDateTime
 
 class MainActivity : ComponentActivity() {
+
+    private val employeesList = mutableStateListOf(
+        Employee(
+            id = "1",
+            name = "עמית אברהמי",
+            email = "amit@example.com",
+            employeeNumber = "12345"
+        ),
+        Employee(
+            id = "2",
+            name = "שרה כהן",
+            email = "sara@example.com",
+            employeeNumber = "67890"
+        ),
+        Employee(
+            id = "3",
+            name = "דוד לוי",
+            email = "david@example.com",
+            employeeNumber = "11111"
+        )
+    )
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         testDataModels()
         setContent {
             SmartScheduleTheme {
+                val navController = rememberNavController()
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    EmployeeListScreen(modifier = Modifier.padding(innerPadding))
+                    NavHost (
+                        navController = navController,
+                        startDestination = Routes.EMPLOYEE_LIST
+                    ){
+                        composable(Routes.EMPLOYEE_LIST){
+                            EmployeeListScreen(
+                                modifier = Modifier.padding(innerPadding),
+                                onAddEmployeeClick = {
+                                    navController.navigate(Routes.ADD_EMPLOYEE)
+                                },
+                                employees = employeesList,
+                                onViewShiftsClick = {
+                                    navController.navigate(Routes.SHIFT_LIST)
+                                }
+                            )
+                        }
+                        composable(Routes.ADD_EMPLOYEE){
+                            AddEmployeeScreen(
+                                onSaveClick = { newEmployee ->
+                                    val employeeWithId = newEmployee.copy(
+                                        id = (employeesList.size + 1).toString()
+                                    )
+                                    employeesList.add(employeeWithId)
+                                    Log.d("AddEmployee", "נוצר עובד: ${newEmployee.name}")
+                                    navController.popBackStack()
+                                },
+                                onBackClick = {
+                                    navController.popBackStack()
+                                }
+                            )
+                        }
+                        composable(Routes.SHIFT_LIST) {
+                            ShiftListScreen(modifier = Modifier.padding(innerPadding))
+                        }
+                    }
                 }
             }
         }
