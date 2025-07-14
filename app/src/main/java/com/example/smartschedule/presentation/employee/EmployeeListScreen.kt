@@ -1,5 +1,6 @@
 package com.example.smartschedule.presentation.employee
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -27,7 +28,8 @@ fun EmployeeListScreen(
     modifier: Modifier = Modifier,
     employees: List<Employee>,
     onAddEmployeeClick: () -> Unit = {},
-    onViewShiftsClick: () -> Unit = {}
+    onViewShiftsClick: () -> Unit = {},
+    onEditEmployeeClick: (Employee) -> Unit = {}
 ) {
     Scaffold(
         floatingActionButton = {
@@ -58,7 +60,10 @@ fun EmployeeListScreen(
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(employees) { employee ->
-                    EmployeeCard(employee = employee)
+                    EmployeeCard(
+                        employee = employee,
+                        onEditClick = onEditEmployeeClick
+                    )
                 }
             }
         }

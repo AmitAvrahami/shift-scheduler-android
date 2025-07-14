@@ -13,6 +13,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.*
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -30,6 +32,7 @@ import com.example.smartschedule.domain.models.Shift
 import com.example.smartschedule.domain.models.ShiftType
 import com.example.smartschedule.domain.validation.ShiftValidation
 import com.example.smartschedule.presentation.employee.AddEmployeeScreen
+import com.example.smartschedule.presentation.employee.EditEmployeeScreen
 import com.example.smartschedule.presentation.employee.EmployeeListScreen
 import com.example.smartschedule.presentation.navigation.Routes
 import com.example.smartschedule.presentation.shift.AddShiftScreen
@@ -73,6 +76,8 @@ class MainActivity : ComponentActivity() {
 
                 val employees by employeeRepository.getAllEmployees().collectAsState(initial = emptyList())
                 val shifts by shiftRepository.getAllShifts().collectAsState(initial = emptyList())
+                var selectedEmployeeForEdit by remember { mutableStateOf<Employee?>(null) }
+
 
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     NavHost (
@@ -88,6 +93,10 @@ class MainActivity : ComponentActivity() {
                                 employees = employees,
                                 onViewShiftsClick = {
                                     navController.navigate(Routes.SHIFT_LIST)
+                                },
+                                onEditEmployeeClick = { selectedEmployee ->
+                                    selectedEmployeeForEdit = selectedEmployee
+                                    navController.navigate(Routes.EDIT_EMPLOYEE)
                                 }
                             )
                         }
@@ -138,6 +147,25 @@ class MainActivity : ComponentActivity() {
                                     navController.popBackStack()
                                 }
                             )
+                        }
+                        composable(Routes.EDIT_EMPLOYEE){
+                            selectedEmployeeForEdit?.let { employee ->
+                                EditEmployeeScreen(
+                                    employee = employee,
+                                    onSaveClick = { updatedEmployee ->
+                                        coroutineScope.launch {
+                                            employeeRepository.insertEmployee(updatedEmployee)
+                                            Log.d("EditEmployee", "עובד עודכן: ${updatedEmployee.name}")
+                                        }
+                                        selectedEmployeeForEdit = null
+                                        navController.popBackStack()
+                                    },
+                                    onBackClick = {
+                                        selectedEmployeeForEdit = null
+                                        navController.popBackStack()
+                                    }
+                                )
+                            }
                         }
                     }
                 }

@@ -1,11 +1,14 @@
 package com.example.smartschedule.presentation.employee
 
+import android.text.Layout
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -14,49 +17,64 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.smartschedule.domain.models.Employee
 import compose.icons.TablerIcons
+import compose.icons.tablericons.Edit
 import compose.icons.tablericons.Id
 import compose.icons.tablericons.Mail
 import compose.icons.tablericons.User
 
 @Composable
-fun EmployeeCard(employee: Employee){
+fun EmployeeCard(
+    employee: Employee,
+    onEditClick: (Employee) -> Unit = {},
+    ){
     Card {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ){
-                Icon(
-                    imageVector = TablerIcons.User,
-                    contentDescription = "User Icon",
-                )
-                Text(text = employee.name)
+        Box {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = TablerIcons.User,
+                        contentDescription = "User Icon",
+                    )
+                    Text(text = employee.name)
+                }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = TablerIcons.Id,
+                        contentDescription = "ID Icon",
+                    )
+                    Text(
+                        text = employee.employeeNumber,
+                    )
+                }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = TablerIcons.Mail,
+                        contentDescription = "Mail Icon",
+                    )
+                    Text(
+                        text = employee.email
+                    )
+                }
             }
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ){
+            IconButton(
+                onClick = { onEditClick(employee) },
+                modifier = Modifier.align(Alignment.TopEnd)
+            ) {
                 Icon(
-                    imageVector = TablerIcons.Id,
-                    contentDescription = "ID Icon",
-                )
-                Text(
-                    text = employee.employeeNumber,
-                )
-            }
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ){
-                Icon(
-                    imageVector = TablerIcons.Mail,
-                    contentDescription = "Mail Icon",
-                )
-                Text(
-                    text = employee.email
+                    imageVector = TablerIcons.Edit,
+                    contentDescription = "Edit Icon",
                 )
             }
         }
@@ -80,5 +98,8 @@ fun EmployeeCardPreview() {
         employeeNumber = "12345"
     )
 
-    EmployeeCard(employee = sampleEmployee)
+    EmployeeCard(
+        employee = sampleEmployee,
+        onEditClick = {}
+        )
 }
