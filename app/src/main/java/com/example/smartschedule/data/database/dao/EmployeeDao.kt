@@ -19,4 +19,8 @@ interface EmployeeDao {
 
     @Query("SELECT * FROM employees WHERE id = :id")
     suspend fun getEmployeeById(id: String): EmployeeEntity?
+
+    @Query("SELECT * FROM employees WHERE employeeNumber = :employeeNumber")
+    suspend fun getEmployeeByEmployeeNumber(employeeNumber: String): EmployeeEntity?
+
 }

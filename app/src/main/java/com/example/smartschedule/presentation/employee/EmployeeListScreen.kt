@@ -29,7 +29,8 @@ fun EmployeeListScreen(
     employees: List<Employee>,
     onAddEmployeeClick: () -> Unit = {},
     onViewShiftsClick: () -> Unit = {},
-    onEditEmployeeClick: (Employee) -> Unit = {}
+    onEditEmployeeClick: (Employee) -> Unit = {},
+    onDeleteEmployeeClick: (Employee) -> Unit = {}
 ) {
     Scaffold(
         floatingActionButton = {
@@ -62,7 +63,8 @@ fun EmployeeListScreen(
                 items(employees) { employee ->
                     EmployeeCard(
                         employee = employee,
-                        onEditClick = onEditEmployeeClick
+                        onEditClick = onEditEmployeeClick,
+                        onDeleteClick = onDeleteEmployeeClick
                     )
                 }
             }
@@ -85,5 +87,8 @@ fun EmployeeListScreenPreview() {
         )
     )
 
-    EmployeeListScreen(employees = sampleEmployees)
+    EmployeeListScreen(
+        employees = sampleEmployees,
+        onDeleteEmployeeClick = {}
+        )
 }

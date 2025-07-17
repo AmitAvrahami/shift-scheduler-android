@@ -19,12 +19,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.smartschedule.data.repository.EmployeeRepository
 import com.example.smartschedule.domain.models.Employee
 
 @Composable
 fun AddEmployeeScreen(
     onSaveClick:(Employee)-> Unit = {},
-    onBackClick: () -> Unit = {}
+    onBackClick: () -> Unit = {},
+    employeeNumberError : String? = null,
+    onEmployeeNumberChanged : (String) -> Unit = {}
 ){
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -48,8 +51,15 @@ fun AddEmployeeScreen(
         )
         OutlinedTextField(
             value = employeeNumber,
-            onValueChange = {employeeNumber = it},
+            onValueChange = { newNumber ->
+                employeeNumber = newNumber
+                onEmployeeNumberChanged(newNumber)
+            },
             label = {Text("מספר עובד")},
+            isError = employeeNumberError != null,
+            supportingText = employeeNumberError?.let {
+                { Text(it, color = MaterialTheme.colorScheme.error) }
+            },
             modifier = Modifier.fillMaxWidth()
         )
         OutlinedTextField(
@@ -58,7 +68,6 @@ fun AddEmployeeScreen(
             label = {Text("כתובת מייל")},
             modifier = Modifier.fillMaxWidth()
         )
-
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -80,8 +89,10 @@ fun AddEmployeeScreen(
                     onSaveClick(newEmployee)
                 },
                 modifier = Modifier.weight(1f),
-                enabled = name.isNotBlank() && email.isNotBlank() && employeeNumber.isNotBlank()
-            ) {
+                enabled = name.isNotBlank() &&
+                        email.isNotBlank() &&
+                        employeeNumber.isNotBlank() &&
+                        employeeNumberError == null) {
                 Text("שמור")
             }
         }
@@ -92,5 +103,8 @@ fun AddEmployeeScreen(
 @Preview(showBackground = true)
 @Composable
 fun AddEmployeeScreenPreview(){
-    AddEmployeeScreen()
+    AddEmployeeScreen(
+        employeeNumberError = "מספר עובד כבר קיים במערכת",
+        onEmployeeNumberChanged = {}
+    )
 }

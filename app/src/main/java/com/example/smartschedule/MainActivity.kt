@@ -7,6 +7,11 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -56,10 +61,23 @@ class MainActivity : ComponentActivity() {
         return "shift_${System.currentTimeMillis()}"
     }
 
+    private suspend fun validateEmployeeNumber(
+        employeeNumber: String,
+        employeeRepository: EmployeeRepository
+    ): String? {
+        return when{
+            employeeNumber.isBlank() -> null
+            employeeNumber.length < 3 -> "מספר עובד חייב להיות לפחות 3 ספרות"
+            employeeRepository.isEmployeeNumberExists(employeeNumber) -> "מספר עובד כבר קיים במערכת"
+            else -> null
+        }
+    }
 
 
 
 
+
+    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -78,6 +96,13 @@ class MainActivity : ComponentActivity() {
                 val shifts by shiftRepository.getAllShifts().collectAsState(initial = emptyList())
                 var selectedEmployeeForEdit by remember { mutableStateOf<Employee?>(null) }
 
+                //delete vars
+                var employeeToDelete by remember { mutableStateOf<Employee?>(null) }
+                var showDeleteConfirmationDialog by remember { mutableStateOf(false) }
+
+                //validation vars
+                var currentEmployeeNumber by remember { mutableStateOf("") }
+                var employeeNumberError by remember { mutableStateOf<String?>(null) }
 
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     NavHost (
@@ -97,6 +122,10 @@ class MainActivity : ComponentActivity() {
                                 onEditEmployeeClick = { selectedEmployee ->
                                     selectedEmployeeForEdit = selectedEmployee
                                     navController.navigate(Routes.EDIT_EMPLOYEE)
+                                },
+                                onDeleteEmployeeClick = {selectedEmployee ->
+                                    employeeToDelete =selectedEmployee
+                                    showDeleteConfirmationDialog = true
                                 }
                             )
                         }
@@ -110,11 +139,23 @@ class MainActivity : ComponentActivity() {
                                         employeeRepository.insertEmployee(employeeWithId)
                                         Log.d("AddEmployee", "נוצר עובד: ${newEmployee.name}")
                                     }
+                                    currentEmployeeNumber = ""
+                                    employeeNumberError = null
                                     navController.popBackStack()
                                 },
                                 onBackClick = {
+                                    currentEmployeeNumber = ""
+                                    employeeNumberError = null
                                     navController.popBackStack()
+                                },
+                                employeeNumberError = employeeNumberError,
+                                onEmployeeNumberChanged = { newNumber ->
+                                    currentEmployeeNumber = newNumber
+                                    coroutineScope.launch {
+                                        employeeNumberError = validateEmployeeNumber(newNumber, employeeRepository)
+                                    }
                                 }
+
                             )
                         }
                         composable(Routes.SHIFT_LIST) {
@@ -167,6 +208,46 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
                         }
+                    }
+                    if (showDeleteConfirmationDialog && employeeToDelete != null)  {
+                        AlertDialog(
+                            onDismissRequest = {
+                                showDeleteConfirmationDialog = false
+                                employeeToDelete = null
+                            },
+                            title = {
+                                Text("מחיקת עובד")
+                            },
+                            text = {
+                                Text("האם אתה בטוח שברצונך למחוק את ${employeeToDelete!!.name}?")
+                            },
+                            confirmButton = {
+                                Button(
+                                    onClick = {
+                                      employeeToDelete?.let { employee ->
+                                          coroutineScope.launch {
+                                              employeeRepository.deleteEmployee(employee)
+                                              Log.d("DeleteEmployee", "עובד נמחק: ${employee.name}")
+                                          }
+                                      }
+                                        showDeleteConfirmationDialog = false
+                                        employeeToDelete = null
+                                    }
+                                ) {
+                                    Text("מחק")
+                                }
+                            },
+                            dismissButton = {
+                                OutlinedButton(
+                                    onClick = {
+                                        showDeleteConfirmationDialog = false
+                                        employeeToDelete = null
+                                    }
+                                ) {
+                                    Text("בטל")
+                                }
+                            }
+                        )
                     }
                 }
             }

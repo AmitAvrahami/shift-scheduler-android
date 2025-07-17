@@ -28,4 +28,8 @@ class EmployeeRepositoryImpl(
     override suspend fun getEmployeeById(id: String): Employee? {
         return employeeDao.getEmployeeById(id)?.toDomain()
     }
+
+    override suspend fun isEmployeeNumberExists(employeeNumber: String): Boolean {
+        return employeeDao.getEmployeeByEmployeeNumber(employeeNumber) != null
+    }
 }

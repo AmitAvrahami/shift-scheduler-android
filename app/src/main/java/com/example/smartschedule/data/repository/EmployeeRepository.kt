@@ -8,4 +8,5 @@ interface EmployeeRepository {
     suspend fun insertEmployee(employee: Employee)
     suspend fun deleteEmployee(employee: Employee)
     suspend fun getEmployeeById(id: String): Employee?
+    suspend fun isEmployeeNumberExists(employeeNumber: String): Boolean
 }

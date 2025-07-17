@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -26,6 +28,7 @@ import compose.icons.tablericons.User
 fun EmployeeCard(
     employee: Employee,
     onEditClick: (Employee) -> Unit = {},
+    onDeleteClick : (Employee) -> Unit = {}
     ){
     Card {
         Box {
@@ -68,14 +71,25 @@ fun EmployeeCard(
                     )
                 }
             }
-            IconButton(
-                onClick = { onEditClick(employee) },
+            Row(
                 modifier = Modifier.align(Alignment.TopEnd)
             ) {
-                Icon(
-                    imageVector = TablerIcons.Edit,
-                    contentDescription = "Edit Icon",
-                )
+                IconButton(
+                    onClick = { onEditClick(employee) },
+                ) {
+                    Icon(
+                        imageVector = TablerIcons.Edit,
+                        contentDescription = "Edit Icon",
+                    )
+                }
+                IconButton(
+                    onClick = {onDeleteClick(employee)}
+                ){
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Delete Icon",
+                    )
+                }
             }
         }
 
@@ -100,6 +114,7 @@ fun EmployeeCardPreview() {
 
     EmployeeCard(
         employee = sampleEmployee,
-        onEditClick = {}
+        onEditClick = {},
+        onDeleteClick = {}
         )
 }

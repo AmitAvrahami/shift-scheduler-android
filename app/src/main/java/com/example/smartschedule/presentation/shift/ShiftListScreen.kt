@@ -22,7 +22,8 @@ fun ShiftListScreen(
     shifts: List<Shift>,
     modifier: Modifier = Modifier,
     onAddShiftClick: () -> Unit = {},
-    ) {
+    onEditShiftClick: (Shift) -> Unit = {}
+) {
 
 
     Scaffold(
@@ -42,7 +43,10 @@ fun ShiftListScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             items(shifts){shift ->
-                ShiftCard(shift)
+                ShiftCard(
+                    shift,
+                    onEditClick = onEditShiftClick
+                    )
             }
         }
     }
@@ -65,6 +69,7 @@ fun ShiftListScreenPreview() {
 
     ShiftListScreen(
         shifts = sampleShifts,
-        onAddShiftClick = { }
+        onAddShiftClick = { },
+        onEditShiftClick = { }
     )
 }
