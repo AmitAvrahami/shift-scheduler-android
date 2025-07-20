@@ -22,7 +22,8 @@ fun ShiftListScreen(
     shifts: List<Shift>,
     modifier: Modifier = Modifier,
     onAddShiftClick: () -> Unit = {},
-    onEditShiftClick: (Shift) -> Unit = {}
+    onEditShiftClick: (Shift) -> Unit = {},
+    onDeleteShiftClick: (Shift) -> Unit = {}
 ) {
 
 
@@ -45,8 +46,9 @@ fun ShiftListScreen(
             items(shifts){shift ->
                 ShiftCard(
                     shift,
-                    onEditClick = onEditShiftClick
-                    )
+                    onEditClick = onEditShiftClick,
+                    onDeleteClick = onDeleteShiftClick
+                )
             }
         }
     }

@@ -41,6 +41,7 @@ import com.example.smartschedule.presentation.employee.EditEmployeeScreen
 import com.example.smartschedule.presentation.employee.EmployeeListScreen
 import com.example.smartschedule.presentation.navigation.Routes
 import com.example.smartschedule.presentation.shift.AddShiftScreen
+import com.example.smartschedule.presentation.shift.EditShiftScreen
 import com.example.smartschedule.presentation.shift.ShiftListScreen
 import com.example.smartschedule.ui.theme.SmartScheduleTheme
 import kotlinx.coroutines.launch
@@ -96,13 +97,20 @@ class MainActivity : ComponentActivity() {
                 val shifts by shiftRepository.getAllShifts().collectAsState(initial = emptyList())
                 var selectedEmployeeForEdit by remember { mutableStateOf<Employee?>(null) }
 
-                //delete vars
+                //deleteEmployee vars
                 var employeeToDelete by remember { mutableStateOf<Employee?>(null) }
                 var showDeleteConfirmationDialog by remember { mutableStateOf(false) }
 
-                //validation vars
+                //validation Employee vars
                 var currentEmployeeNumber by remember { mutableStateOf("") }
                 var employeeNumberError by remember { mutableStateOf<String?>(null) }
+
+                //Shift Edit Vars
+                var selectedShiftForEdit by remember { mutableStateOf<Shift?>(null) }
+
+                //Delete Shift Vars
+                var shiftToDelete by remember { mutableStateOf<Shift?>(null) }
+                var showDeleteShiftConfirmationDialog by remember { mutableStateOf(false) }
 
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     NavHost (
@@ -164,6 +172,14 @@ class MainActivity : ComponentActivity() {
                                 shifts = shifts,
                                 onAddShiftClick = {
                                     navController.navigate(Routes.ADD_SHIFT)
+                                },
+                                onEditShiftClick = {selectedShift ->
+                                   selectedShiftForEdit = selectedShift
+                                    navController.navigate(Routes.EDIT_SHIFT)
+                                },
+                                onDeleteShiftClick = {selectedShift ->
+                                    shiftToDelete = selectedShift
+                                    showDeleteShiftConfirmationDialog = true
                                 }
                             )
                         }
@@ -208,6 +224,25 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
                         }
+                        composable(Routes.EDIT_SHIFT){
+                            selectedShiftForEdit?.let { shift ->
+                                EditShiftScreen(
+                                    shift = shift,
+                                    onSaveClick = { updatedShift ->
+                                        coroutineScope.launch {
+                                            shiftRepository.insertShift(updatedShift)//TODO : Create update function
+                                            Log.d("EditShift", "משמרת עודכנה: ${updatedShift.shiftType.displayName}")
+                                        }
+                                        selectedShiftForEdit = null
+                                        navController.popBackStack()
+                                    },
+                                    onBackClick = {
+                                        selectedShiftForEdit = null
+                                        navController.popBackStack()
+                                    }
+                                )
+                            }
+                        }
                     }
                     if (showDeleteConfirmationDialog && employeeToDelete != null)  {
                         AlertDialog(
@@ -242,6 +277,47 @@ class MainActivity : ComponentActivity() {
                                     onClick = {
                                         showDeleteConfirmationDialog = false
                                         employeeToDelete = null
+                                    }
+                                ) {
+                                    Text("בטל")
+                                }
+                            }
+                        )
+                    }
+
+                    if(showDeleteShiftConfirmationDialog && shiftToDelete != null){
+                        AlertDialog(
+                            onDismissRequest = {
+                                showDeleteConfirmationDialog = false
+                                shiftToDelete = null
+                            },
+                            title = {
+                                Text("מחיקת משמרת")
+                            },
+                            text = {
+                                Text("האם אתה בטוח שברצונך למחוק את ${shiftToDelete!!.shiftType.displayName}?")
+                            },
+                            confirmButton = {
+                                Button(
+                                    onClick = {
+                                        shiftToDelete?.let { shift ->
+                                            coroutineScope.launch {
+                                                shiftRepository.deleteShift(shift)
+                                                Log.d("DeleteShift", "משמרת נמחקה: ${shift.shiftType.displayName}")
+                                            }
+                                        }
+                                        showDeleteConfirmationDialog = false
+                                        shiftToDelete = null
+                                    }
+                                ) {
+                                    Text("מחק")
+                                }
+                            },
+                            dismissButton = {
+                                OutlinedButton(
+                                    onClick = {
+                                        showDeleteConfirmationDialog = false
+                                        shiftToDelete = null
                                     }
                                 ) {
                                     Text("בטל")
