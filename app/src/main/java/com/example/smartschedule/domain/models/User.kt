@@ -1,7 +1,8 @@
 package com.example.smartschedule.domain.models
 
-data class User(
-    val id: Int,
-    val name: String,
-    val email: String
+open class User(
+    open val id: Int,
+    open val name: String,
+    open val email: String,
+    open val type : UserType
 )

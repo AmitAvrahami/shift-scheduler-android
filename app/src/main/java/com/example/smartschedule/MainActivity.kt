@@ -36,6 +36,8 @@ import com.example.smartschedule.domain.models.Schedule
 import com.example.smartschedule.domain.models.Shift
 import com.example.smartschedule.domain.models.ShiftType
 import com.example.smartschedule.domain.validation.ShiftValidation
+import com.example.smartschedule.presentation.auth.LoginScreen
+import com.example.smartschedule.presentation.dashboard.ManagerDashboard
 import com.example.smartschedule.presentation.employee.AddEmployeeScreen
 import com.example.smartschedule.presentation.employee.EditEmployeeScreen
 import com.example.smartschedule.presentation.employee.EmployeeListScreen
@@ -115,8 +117,40 @@ class MainActivity : ComponentActivity() {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     NavHost (
                         navController = navController,
-                        startDestination = Routes.EMPLOYEE_LIST
+                        startDestination = Routes.LOGIN
                     ){
+                        composable(Routes.LOGIN){
+                            LoginScreen(
+                                modifier = Modifier.padding(innerPadding),
+                                onLoginSuccess = { userType ->
+                                    when (userType) {
+                                        "employee" -> {
+                                            Log.d("MainActivity", "📱 מנווט ללוח בקרה עובד")
+                                            navController.navigate(Routes.EMPLOYEE_LIST)
+                                        }
+                                        "manager" -> {
+                                            Log.d("MainActivity", "👔 מנווט ללוח בקרה מנהל")
+                                            navController.navigate(Routes.MANAGER_DASHBOARD)
+                                        }
+                                        else -> {
+                                            Log.e("MainActivity", "❌ סוג משתמש לא מוכר: $userType")
+                                        }
+                                    }
+                                    Log.d("MainActivity", "🎉 התחברות הצליחה - סוג משתמש: $userType")
+                                }
+                            )
+                        }
+                        composable(Routes.MANAGER_DASHBOARD){
+                            ManagerDashboard(
+                                modifier = Modifier.padding(innerPadding),
+                                onViewEmployeesClick = {
+                                    navController.navigate(Routes.EMPLOYEE_LIST)
+                                },
+                                onViewShiftsClick = {
+                                    navController.navigate(Routes.SHIFT_LIST)
+                                }
+                            )
+                        }
                         composable(Routes.EMPLOYEE_LIST){
                             EmployeeListScreen(
                                 modifier = Modifier.padding(innerPadding),
