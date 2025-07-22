@@ -1,4 +1,4 @@
-package com.example.smartschedule.data.repository
+package com.example.smartschedule.domain.repository
 
 import com.example.smartschedule.domain.models.Employee
 import kotlinx.coroutines.flow.Flow

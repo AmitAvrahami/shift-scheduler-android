@@ -10,9 +10,11 @@ import androidx.compose.material3.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.smartschedule.domain.common.AuthenticationResult
-import com.example.smartschedule.domain.repository.AuthenticationRepository
+import com.example.smartschedule.domain.repository.UserRepository
 import com.example.smartschedule.domain.usecase.LoginUseCase
+import com.example.smartschedule.presentation.viewmodel.LoginViewModel
 import kotlinx.coroutines.launch
 
 
@@ -23,15 +25,15 @@ fun LoginScreen(
     loginUseCase: LoginUseCase? = null,
     // TODO: Replace with ViewModel pattern in future sprint
     // LoginScreen shouldn't know about Repository directly
-    authRepository: AuthenticationRepository? = null,
-){
+    viewModel: LoginViewModel = hiltViewModel()
+    ){
     //Input Login Vars
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
     //Login State Vars
-    var errorMessage by remember { mutableStateOf<String?>(null) }
-    var isLoading by remember { mutableStateOf(false) }
+    val isLoading by viewModel.isLoading.collectAsState()
+    val errorMessages by viewModel.errorMessage.collectAsState()
 
     //Execute vars
     val coroutineScope = rememberCoroutineScope()
@@ -44,14 +46,20 @@ fun LoginScreen(
 
         OutlinedTextField(
             value = username,
-            onValueChange = { username = it },
+            onValueChange = {
+                username = it
+                viewModel.clearError()
+            },
             label = { Text("שם משתמש") },
             modifier = Modifier.fillMaxWidth()
             )
 
         OutlinedTextField(
             value = password,
-            onValueChange = { password = it },
+            onValueChange = {
+                password = it
+                viewModel.clearError()
+            },
             label = { Text("סיסמה") },
             modifier = Modifier.fillMaxWidth(),
             visualTransformation = PasswordVisualTransformation()
@@ -59,7 +67,7 @@ fun LoginScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        errorMessage?.let { errorMessage ->
+        errorMessages?.let { errorMessage ->
             Text(
                 text = errorMessage,
                 color = MaterialTheme.colorScheme.error,
@@ -71,40 +79,10 @@ fun LoginScreen(
         Button(
             onClick = {
                 if (username.isNotBlank() && password.isNotBlank()) {
-                    isLoading = true
-                    coroutineScope.launch {
-                        val result = loginUseCase?.execute(username, password)
-                            ?: authRepository?.let { repo ->
-                                val user = repo.login(username, password)
-                                if (user != null) AuthenticationResult.Success(user)
-                                else AuthenticationResult.Error("שם משתמש או סיסמה שגויים")
-                            } ?: AuthenticationResult.Error("אין UseCase זמין")
-
-                        when (result) {
-                            is AuthenticationResult.Success -> {
-                                if (result.user != null) {
-                                    Log.d("LoginScreen", "✅ משתמש מאומת: ${result.user.type}")
-                                    errorMessage = null
-                                    onLoginSuccess(result.user.type.name.lowercase())
-                                } else {
-                                    Log.d("LoginScreen", "⚠️ Success ללא user")
-                                    errorMessage = "שגיאה לא צפויה"
-                                    isLoading = false
-                                }
-                            }
-
-                            is AuthenticationResult.Error -> {
-                                isLoading = false
-                                errorMessage = result.message
-                                Log.d("LoginScreen", "❌ שגיאה: ${result.message}")
-                            }
-
-                            is AuthenticationResult.Loading -> Unit
-                        }
-                    }
-                }else {
-                            errorMessage = "יש למלא את כל השדות"
-                        }
+                    viewModel.login(username, password, onLoginSuccess)
+                } else {
+                    // TODO: Handle empty fields
+                }
             },
             enabled = !isLoading,
             modifier = Modifier.fillMaxWidth()

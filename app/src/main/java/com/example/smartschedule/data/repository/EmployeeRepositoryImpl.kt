@@ -4,6 +4,7 @@ import com.example.smartschedule.data.database.dao.EmployeeDao
 import com.example.smartschedule.data.mappers.toDomain
 import com.example.smartschedule.data.mappers.toEntity
 import com.example.smartschedule.domain.models.Employee
+import com.example.smartschedule.domain.repository.EmployeeRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 

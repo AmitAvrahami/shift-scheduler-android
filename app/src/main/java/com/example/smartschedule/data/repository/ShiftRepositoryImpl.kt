@@ -4,6 +4,7 @@ import com.example.smartschedule.data.database.dao.ShiftDao
 import com.example.smartschedule.data.mappers.toDomain
 import com.example.smartschedule.data.mappers.toEntity
 import com.example.smartschedule.domain.models.Shift
+import com.example.smartschedule.domain.repository.ShiftRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 

@@ -8,29 +8,17 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.*
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.smartschedule.data.database.AppDataBase
-import com.example.smartschedule.data.repository.EmployeeRepository
-import com.example.smartschedule.data.repository.EmployeeRepositoryImpl
-import com.example.smartschedule.data.repository.ShiftRepository
-import com.example.smartschedule.data.repository.ShiftRepositoryImpl
 import com.example.smartschedule.domain.models.Employee
 import com.example.smartschedule.domain.models.Schedule
 import com.example.smartschedule.domain.models.Shift
@@ -46,47 +34,47 @@ import com.example.smartschedule.presentation.shift.AddShiftScreen
 import com.example.smartschedule.presentation.shift.EditShiftScreen
 import com.example.smartschedule.presentation.shift.ShiftListScreen
 import com.example.smartschedule.ui.theme.SmartScheduleTheme
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalDateTime
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    private lateinit var dataBase : AppDataBase
-    private lateinit var employeeRepository : EmployeeRepository
-    private lateinit var shiftRepository: ShiftRepository
-
+    // ✅ Removed all manual repositories - Hilt will handle DI!
+    // ❌ private lateinit var dataBase : AppDataBase
+    // ❌ private lateinit var employeeRepository : EmployeeRepository
+    // ❌ private lateinit var shiftRepository: ShiftRepository
+    // ❌ private lateinit var userRepository: UserRepository
 
     private fun generateEmployeeId(): String {
         return "emp_${System.currentTimeMillis()}"
     }
+
     private fun generateShiftId(): String {
         return "shift_${System.currentTimeMillis()}"
     }
 
+    // TODO: Move to ViewModel later
     private suspend fun validateEmployeeNumber(
         employeeNumber: String,
-        employeeRepository: EmployeeRepository
+        employeeCount: Int // זמני - נשנה אחר כך
     ): String? {
         return when{
             employeeNumber.isBlank() -> null
             employeeNumber.length < 3 -> "מספר עובד חייב להיות לפחות 3 ספרות"
-            employeeRepository.isEmployeeNumberExists(employeeNumber) -> "מספר עובד כבר קיים במערכת"
+            // TODO: Real validation with repository
+            employeeNumber == "12345" -> "מספר עובד כבר קיים במערכת"
             else -> null
         }
     }
-
-
-
-
 
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        dataBase = DatabaseModule.getDatabase(this)
-        employeeRepository = EmployeeRepositoryImpl(dataBase.employeeDao())
-        shiftRepository = ShiftRepositoryImpl(dataBase.shiftDao())
+        // ✅ No manual initialization - Hilt handles everything!
 
         enableEdgeToEdge()
         testDataModels()
@@ -95,8 +83,10 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 val coroutineScope = rememberCoroutineScope()
 
-                val employees by employeeRepository.getAllEmployees().collectAsState(initial = emptyList())
-                val shifts by shiftRepository.getAllShifts().collectAsState(initial = emptyList())
+                // TODO: These will be replaced with ViewModels later
+                var employees by remember { mutableStateOf(listOf<Employee>()) }
+                var shifts by remember { mutableStateOf(listOf<Shift>()) }
+
                 var selectedEmployeeForEdit by remember { mutableStateOf<Employee?>(null) }
 
                 //deleteEmployee vars
@@ -122,7 +112,9 @@ class MainActivity : ComponentActivity() {
                         composable(Routes.LOGIN){
                             LoginScreen(
                                 modifier = Modifier.padding(innerPadding),
+                                // ✅ Hilt will inject LoginViewModel automatically!
                                 onLoginSuccess = { userType ->
+                                    Log.d("MainActivity", "🎉 התחברות הצליחה - סוג משתמש: $userType")
                                     when (userType) {
                                         "employee" -> {
                                             Log.d("MainActivity", "📱 מנווט ללוח בקרה עובד")
@@ -132,14 +124,18 @@ class MainActivity : ComponentActivity() {
                                             Log.d("MainActivity", "👔 מנווט ללוח בקרה מנהל")
                                             navController.navigate(Routes.MANAGER_DASHBOARD)
                                         }
+                                        "admin" -> {
+                                            Log.d("MainActivity","שלופ אדמין")
+                                            navController.navigate(Routes.MANAGER_DASHBOARD)
+                                        }
                                         else -> {
                                             Log.e("MainActivity", "❌ סוג משתמש לא מוכר: $userType")
                                         }
                                     }
-                                    Log.d("MainActivity", "🎉 התחברות הצליחה - סוג משתמש: $userType")
                                 }
                             )
                         }
+
                         composable(Routes.MANAGER_DASHBOARD){
                             ManagerDashboard(
                                 modifier = Modifier.padding(innerPadding),
@@ -151,6 +147,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         }
+
                         composable(Routes.EMPLOYEE_LIST){
                             EmployeeListScreen(
                                 modifier = Modifier.padding(innerPadding),
@@ -166,21 +163,22 @@ class MainActivity : ComponentActivity() {
                                     navController.navigate(Routes.EDIT_EMPLOYEE)
                                 },
                                 onDeleteEmployeeClick = {selectedEmployee ->
-                                    employeeToDelete =selectedEmployee
+                                    employeeToDelete = selectedEmployee
                                     showDeleteConfirmationDialog = true
                                 }
                             )
                         }
+
                         composable(Routes.ADD_EMPLOYEE){
                             AddEmployeeScreen(
                                 onSaveClick = { newEmployee ->
-                                    coroutineScope.launch {  // ← חדש!
-                                        val employeeWithId = newEmployee.copy(
-                                            id = generateEmployeeId()
-                                        )
-                                        employeeRepository.insertEmployee(employeeWithId)
-                                        Log.d("AddEmployee", "נוצר עובד: ${newEmployee.name}")
-                                    }
+                                    // TODO: Replace with ViewModel call
+                                    val employeeWithId = newEmployee.copy(
+                                        id = generateEmployeeId()
+                                    )
+                                    employees = employees + employeeWithId
+                                    Log.d("AddEmployee", "נוצר עובד: ${newEmployee.name}")
+
                                     currentEmployeeNumber = ""
                                     employeeNumberError = null
                                     navController.popBackStack()
@@ -194,12 +192,12 @@ class MainActivity : ComponentActivity() {
                                 onEmployeeNumberChanged = { newNumber ->
                                     currentEmployeeNumber = newNumber
                                     coroutineScope.launch {
-                                        employeeNumberError = validateEmployeeNumber(newNumber, employeeRepository)
+                                        employeeNumberError = validateEmployeeNumber(newNumber, employees.size)
                                     }
                                 }
-
                             )
                         }
+
                         composable(Routes.SHIFT_LIST) {
                             ShiftListScreen(
                                 modifier = Modifier.padding(innerPadding),
@@ -208,7 +206,7 @@ class MainActivity : ComponentActivity() {
                                     navController.navigate(Routes.ADD_SHIFT)
                                 },
                                 onEditShiftClick = {selectedShift ->
-                                   selectedShiftForEdit = selectedShift
+                                    selectedShiftForEdit = selectedShift
                                     navController.navigate(Routes.EDIT_SHIFT)
                                 },
                                 onDeleteShiftClick = {selectedShift ->
@@ -217,21 +215,22 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         }
+
                         composable(Routes.ADD_SHIFT) {
                             AddShiftScreen(
                                 modifier = Modifier.padding(innerPadding),
                                 onSaveClick = {
-                                    coroutineScope.launch {
-                                        val newShift = Shift(
-                                            id = generateShiftId(),
-                                            startTime = LocalDateTime.of(2024, 1, 15, 6, 45), // זמני - נשפר בהמשך
-                                            endTime = LocalDateTime.of(2024, 1, 15, 14, 45),
-                                            shiftType = ShiftType.MORNING,
-                                            assignedEmployeeId = null
-                                        )
-                                        shiftRepository.insertShift(newShift)
-                                        Log.d("AddShift", "נוצרה משמרת חדשה")
-                                    }
+                                    // TODO: Replace with ViewModel call
+                                    val newShift = Shift(
+                                        id = generateShiftId(),
+                                        startTime = LocalDateTime.of(2024, 1, 15, 6, 45), // זמני - נשפר בהמשך
+                                        endTime = LocalDateTime.of(2024, 1, 15, 14, 45),
+                                        shiftType = ShiftType.MORNING,
+                                        assignedEmployeeId = null
+                                    )
+                                    shifts = shifts + newShift
+                                    Log.d("AddShift", "נוצרה משמרת חדשה")
+
                                     navController.popBackStack()
                                 },
                                 onBackClick = {
@@ -239,15 +238,18 @@ class MainActivity : ComponentActivity() {
                                 }
                             )
                         }
+
                         composable(Routes.EDIT_EMPLOYEE){
                             selectedEmployeeForEdit?.let { employee ->
                                 EditEmployeeScreen(
                                     employee = employee,
                                     onSaveClick = { updatedEmployee ->
-                                        coroutineScope.launch {
-                                            employeeRepository.insertEmployee(updatedEmployee)
-                                            Log.d("EditEmployee", "עובד עודכן: ${updatedEmployee.name}")
+                                        // TODO: Replace with ViewModel call
+                                        employees = employees.map {
+                                            if (it.id == updatedEmployee.id) updatedEmployee else it
                                         }
+                                        Log.d("EditEmployee", "עובד עודכן: ${updatedEmployee.name}")
+
                                         selectedEmployeeForEdit = null
                                         navController.popBackStack()
                                     },
@@ -258,15 +260,18 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
                         }
+
                         composable(Routes.EDIT_SHIFT){
                             selectedShiftForEdit?.let { shift ->
                                 EditShiftScreen(
                                     shift = shift,
                                     onSaveClick = { updatedShift ->
-                                        coroutineScope.launch {
-                                            shiftRepository.insertShift(updatedShift)//TODO : Create update function
-                                            Log.d("EditShift", "משמרת עודכנה: ${updatedShift.shiftType.displayName}")
+                                        // TODO: Replace with ViewModel call
+                                        shifts = shifts.map {
+                                            if (it.id == updatedShift.id) updatedShift else it
                                         }
+                                        Log.d("EditShift", "משמרת עודכנה: ${updatedShift.shiftType.displayName}")
+
                                         selectedShiftForEdit = null
                                         navController.popBackStack()
                                     },
@@ -278,7 +283,9 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                     }
-                    if (showDeleteConfirmationDialog && employeeToDelete != null)  {
+
+                    // Delete Employee Dialog
+                    if (showDeleteConfirmationDialog && employeeToDelete != null) {
                         AlertDialog(
                             onDismissRequest = {
                                 showDeleteConfirmationDialog = false
@@ -293,12 +300,11 @@ class MainActivity : ComponentActivity() {
                             confirmButton = {
                                 Button(
                                     onClick = {
-                                      employeeToDelete?.let { employee ->
-                                          coroutineScope.launch {
-                                              employeeRepository.deleteEmployee(employee)
-                                              Log.d("DeleteEmployee", "עובד נמחק: ${employee.name}")
-                                          }
-                                      }
+                                        employeeToDelete?.let { employee ->
+                                            // TODO: Replace with ViewModel call
+                                            employees = employees.filter { it.id != employee.id }
+                                            Log.d("DeleteEmployee", "עובד נמחק: ${employee.name}")
+                                        }
                                         showDeleteConfirmationDialog = false
                                         employeeToDelete = null
                                     }
@@ -319,10 +325,11 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
+                    // Delete Shift Dialog
                     if(showDeleteShiftConfirmationDialog && shiftToDelete != null){
                         AlertDialog(
                             onDismissRequest = {
-                                showDeleteConfirmationDialog = false
+                                showDeleteShiftConfirmationDialog = false
                                 shiftToDelete = null
                             },
                             title = {
@@ -335,12 +342,11 @@ class MainActivity : ComponentActivity() {
                                 Button(
                                     onClick = {
                                         shiftToDelete?.let { shift ->
-                                            coroutineScope.launch {
-                                                shiftRepository.deleteShift(shift)
-                                                Log.d("DeleteShift", "משמרת נמחקה: ${shift.shiftType.displayName}")
-                                            }
+                                            // TODO: Replace with ViewModel call
+                                            shifts = shifts.filter { it.id != shift.id }
+                                            Log.d("DeleteShift", "משמרת נמחקה: ${shift.shiftType.displayName}")
                                         }
-                                        showDeleteConfirmationDialog = false
+                                        showDeleteShiftConfirmationDialog = false
                                         shiftToDelete = null
                                     }
                                 ) {
@@ -350,7 +356,7 @@ class MainActivity : ComponentActivity() {
                             dismissButton = {
                                 OutlinedButton(
                                     onClick = {
-                                        showDeleteConfirmationDialog = false
+                                        showDeleteShiftConfirmationDialog = false
                                         shiftToDelete = null
                                     }
                                 ) {

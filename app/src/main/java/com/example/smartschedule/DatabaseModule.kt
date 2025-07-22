@@ -13,10 +13,11 @@ object DatabaseModule {
     fun getDatabase(context: Context): AppDataBase {
         return INSTANCE ?: synchronized(this) {
             val instance = Room.databaseBuilder(
-                context.applicationContext,
-                AppDataBase::class.java,
-                "smart_schedule_database"
-            ).build()
+                        context.applicationContext,
+                        AppDataBase::class.java,
+                        "smart_schedule_database"
+                    ).fallbackToDestructiveMigration(true)
+                .build()
             INSTANCE = instance
             instance
 
