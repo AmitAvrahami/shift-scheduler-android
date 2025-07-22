@@ -10,16 +10,31 @@ import androidx.compose.material3.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import com.example.smartschedule.domain.common.AuthenticationResult
+import com.example.smartschedule.domain.repository.AuthenticationRepository
+import com.example.smartschedule.domain.usecase.LoginUseCase
+import kotlinx.coroutines.launch
 
 
 @Composable
 fun LoginScreen(
     modifier: Modifier = Modifier,
-    onLoginSuccess: (String) -> Unit = {}
+    onLoginSuccess: (String) -> Unit = {},
+    loginUseCase: LoginUseCase? = null,
+    // TODO: Replace with ViewModel pattern in future sprint
+    // LoginScreen shouldn't know about Repository directly
+    authRepository: AuthenticationRepository? = null,
 ){
+    //Input Login Vars
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+
+    //Login State Vars
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var isLoading by remember { mutableStateOf(false) }
+
+    //Execute vars
+    val coroutineScope = rememberCoroutineScope()
 
     Column(
         modifier = modifier.padding(16.dp),
@@ -55,30 +70,51 @@ fun LoginScreen(
 
         Button(
             onClick = {
-                if(username.isNotBlank() && password.isNotBlank()) {
-                    val userInfo = when {
-                        username == "admin" && password == "123" -> "manager"
-                        username == "amit" && password == "456" -> "employee"
-                        username == "manager" && password == "789" -> "manager"
-                        else -> null
-                    }
+                if (username.isNotBlank() && password.isNotBlank()) {
+                    isLoading = true
+                    coroutineScope.launch {
+                        val result = loginUseCase?.execute(username, password)
+                            ?: authRepository?.let { repo ->
+                                val user = repo.login(username, password)
+                                if (user != null) AuthenticationResult.Success(user)
+                                else AuthenticationResult.Error("שם משתמש או סיסמה שגויים")
+                            } ?: AuthenticationResult.Error("אין UseCase זמין")
 
-                    if (userInfo != null) {
-                        Log.d("LoginScreen", "✅ משתמש מאומת: $userInfo")
-                        errorMessage = null
-                        onLoginSuccess(userInfo)
-                    } else {
-                        errorMessage = "שם משתמש או סיסמה שגויים"
-                        Log.d("LoginScreen", "❌ פרטים שגויים!")
+                        when (result) {
+                            is AuthenticationResult.Success -> {
+                                if (result.user != null) {
+                                    Log.d("LoginScreen", "✅ משתמש מאומת: ${result.user.type}")
+                                    errorMessage = null
+                                    onLoginSuccess(result.user.type.name.lowercase())
+                                } else {
+                                    Log.d("LoginScreen", "⚠️ Success ללא user")
+                                    errorMessage = "שגיאה לא צפויה"
+                                    isLoading = false
+                                }
+                            }
+
+                            is AuthenticationResult.Error -> {
+                                isLoading = false
+                                errorMessage = result.message
+                                Log.d("LoginScreen", "❌ שגיאה: ${result.message}")
+                            }
+
+                            is AuthenticationResult.Loading -> Unit
+                        }
                     }
-                } else {
-                    errorMessage = "יש למלא את כל השדות"
-                    Log.d("LoginScreen", "❌ שדות ריקים!")
-                }
+                }else {
+                            errorMessage = "יש למלא את כל השדות"
+                        }
             },
+            enabled = !isLoading,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("התחבר")
+            if (isLoading) {
+                Text("מתחבר...")
+            }
+            else {
+                Text("התחבר")
+            }
         }
     }
 }
