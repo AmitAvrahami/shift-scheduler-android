@@ -10,6 +10,8 @@ object Routes{
     const val EDIT_EMPLOYEE = "edit_employee"
     const val EDIT_SHIFT = "edit_shift"
 
+    const val USER_LIST = "user_list"
+
 
 
 }

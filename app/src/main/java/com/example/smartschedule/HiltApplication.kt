@@ -12,14 +12,14 @@ import javax.inject.Inject
 class HiltApplication : Application() {
 
     @Inject
-    lateinit var dataSeeder: DataSeeder
+    lateinit var  dataSeeder : DataSeeder
 
     override fun onCreate() {
         super.onCreate()
 
-        // יצירת dummy data ברקע
         CoroutineScope(Dispatchers.IO).launch {
             dataSeeder.seedInitialData()
         }
+
     }
 }

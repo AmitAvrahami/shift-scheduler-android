@@ -13,7 +13,8 @@ import androidx.compose.ui.unit.dp
 fun ManagerDashboard(
     modifier: Modifier = Modifier,
     onViewEmployeesClick: () -> Unit = {},
-    onViewShiftsClick: () -> Unit = {}
+    onViewShiftsClick: () -> Unit = {},
+    onViewUsersClick : () -> Unit = {}
 ) {
     Column(
         modifier = modifier
@@ -39,6 +40,13 @@ fun ManagerDashboard(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("ניהול משמרות")
+        }
+
+        Button(
+            onClick = onViewUsersClick,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("ניהול משתמשים")
         }
     }
 }

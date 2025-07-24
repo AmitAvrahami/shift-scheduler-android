@@ -33,6 +33,7 @@ import com.example.smartschedule.presentation.navigation.Routes
 import com.example.smartschedule.presentation.shift.AddShiftScreen
 import com.example.smartschedule.presentation.shift.EditShiftScreen
 import com.example.smartschedule.presentation.shift.ShiftListScreen
+import com.example.smartschedule.presentation.user.UserListScreen
 import com.example.smartschedule.ui.theme.SmartScheduleTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -42,11 +43,6 @@ import java.time.LocalDateTime
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
-    // ✅ Removed all manual repositories - Hilt will handle DI!
-    // ❌ private lateinit var dataBase : AppDataBase
-    // ❌ private lateinit var employeeRepository : EmployeeRepository
-    // ❌ private lateinit var shiftRepository: ShiftRepository
-    // ❌ private lateinit var userRepository: UserRepository
 
     private fun generateEmployeeId(): String {
         return "emp_${System.currentTimeMillis()}"
@@ -59,7 +55,7 @@ class MainActivity : ComponentActivity() {
     // TODO: Move to ViewModel later
     private suspend fun validateEmployeeNumber(
         employeeNumber: String,
-        employeeCount: Int // זמני - נשנה אחר כך
+        employeeCount: Int
     ): String? {
         return when{
             employeeNumber.isBlank() -> null
@@ -112,7 +108,6 @@ class MainActivity : ComponentActivity() {
                         composable(Routes.LOGIN){
                             LoginScreen(
                                 modifier = Modifier.padding(innerPadding),
-                                // ✅ Hilt will inject LoginViewModel automatically!
                                 onLoginSuccess = { userType ->
                                     Log.d("MainActivity", "🎉 התחברות הצליחה - סוג משתמש: $userType")
                                     when (userType) {
@@ -144,6 +139,9 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onViewShiftsClick = {
                                     navController.navigate(Routes.SHIFT_LIST)
+                                },
+                                onViewUsersClick = {
+                                    navController.navigate(Routes.USER_LIST)
                                 }
                             )
                         }
@@ -281,6 +279,12 @@ class MainActivity : ComponentActivity() {
                                     }
                                 )
                             }
+                        }
+
+                        composable(Routes.USER_LIST) {
+                            UserListScreen(
+                                modifier = Modifier.padding(innerPadding)
+                            )
                         }
                     }
 
