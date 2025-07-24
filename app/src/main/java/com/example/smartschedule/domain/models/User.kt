@@ -1,20 +1,31 @@
 package com.example.smartschedule.domain.models
 
+import java.time.LocalDateTime
+
 open class User(
     open val id: String,
     open val name: String,
     open val email: String,
-    open val type : UserType
+    open val type : UserType,
+    open val status: UserStatus = UserStatus.ACTIVE,
+    open val createdDate: LocalDateTime = LocalDateTime.now()
 ){
-    fun canManageEmployees(): Boolean {
-        return type == UserType.MANAGER || type == UserType.ADMIN
-    }
+    /**
+     * בודק אם המשתמש יכול להתחבר למערכת
+     * מבוסס על הסטטוס שלו
+     */
+    fun canLogin(): Boolean = status.canLogin()
 
-    fun canManageShifts(): Boolean {
-        return type == UserType.MANAGER || type == UserType.ADMIN
-    }
+    /**
+     * בודק אם המשתמש מופיע ברשימות ובסידורים
+     */
+    fun isVisible(): Boolean = status.isVisible()
 
-    fun canViewAllSchedules(): Boolean {
-        return type == UserType.MANAGER || type == UserType.ADMIN
+    /**
+     * מחזיר את הזמן שעבר מאז יצירת המשתמש
+     * שימושי לדוחות ולבדיקות
+     */
+    fun getAccountAge(): Long {
+        return java.time.Duration.between(createdDate, LocalDateTime.now()).toDays()
     }
 }

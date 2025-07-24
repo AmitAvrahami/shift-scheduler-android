@@ -3,6 +3,7 @@ package com.example.smartschedule.data.mappers
 
 import com.example.smartschedule.data.database.entities.UserEntity
 import com.example.smartschedule.domain.models.User
+import com.example.smartschedule.domain.models.UserStatus
 import com.example.smartschedule.domain.models.UserType
 import java.security.MessageDigest
 
@@ -12,7 +13,9 @@ fun User.toEntity(): UserEntity {
         name = this.name,
         email = this.email,
         passwordHash = "", //TODO : hash password
-        userType = this.type.name
+        userType = this.type.name,
+        status = this.status.name,
+        createdDate = this.createdDate
     )
 }
 
@@ -21,7 +24,10 @@ fun UserEntity.toDomain(): User {
         id = this.id,
         name = this.name,
         email = this.email,
-        type = UserType.valueOf(this.userType)
+        type = UserType.valueOf(this.userType),
+        status = UserStatus.valueOf(this.status),
+        createdDate = this.createdDate
+
     )
 }
 
