@@ -2,6 +2,7 @@ package com.example.smartschedule.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.smartschedule.domain.models.User
 import com.example.smartschedule.domain.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,16 +24,15 @@ class LoginViewModel @Inject constructor(
 
 
 
-    fun login(email: String, password: String,onLoginSuccess: (String) -> Unit){
+    fun login(email: String, password: String, onLoginSuccess: (User) -> Unit){
+        _isLoading.value = true
+        _errorMessage.value = null
         viewModelScope.launch {
-            _isLoading.value = true
-            _errorMessage.value = null
-
             try {
                 val user = userRepository.login(email, password)
                 if (user != null){
                     _isLoading.value = false
-                    onLoginSuccess(user.type.name.lowercase())
+                    onLoginSuccess(user)
                 }else {
                     _isLoading.value = false
                     _errorMessage.value = "שם משתמש או סיסמה שגויים"
@@ -42,6 +42,10 @@ class LoginViewModel @Inject constructor(
                 _errorMessage.value = "שגיאה בהתחברות: ${e.message}"
             }
         }
+    }
+
+    suspend fun getCurrentUser() : User? {
+        return userRepository.getCurrentUser()
     }
 
     fun clearError() {

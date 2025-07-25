@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.smartschedule.domain.models.User
 import com.example.smartschedule.domain.usecase.LoginUseCase
 import com.example.smartschedule.presentation.viewmodel.LoginViewModel
 import com.example.smartschedule.presentation.viewmodel.UserViewModel
@@ -18,15 +19,12 @@ import com.example.smartschedule.presentation.viewmodel.UserViewModel
 @Composable
 fun LoginScreen(
     modifier: Modifier = Modifier,
-    onLoginSuccess: (String) -> Unit = {},
-    loginUseCase: LoginUseCase? = null,
-    // TODO: Replace with ViewModel pattern in future sprint
-    // LoginScreen shouldn't know about Repository directly
+    onLoginSuccess: (User) -> Unit = {},
     viewModel: LoginViewModel = hiltViewModel()
     ){
     //Input Login Vars
-    var username by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    var username by remember { mutableStateOf("amit@admin.com") } //TODO : Delete IT
+    var password by remember { mutableStateOf("123456") }
 
     //Login State Vars
     val isLoading by viewModel.isLoading.collectAsState()

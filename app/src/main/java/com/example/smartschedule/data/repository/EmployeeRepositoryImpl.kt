@@ -7,8 +7,9 @@ import com.example.smartschedule.domain.models.Employee
 import com.example.smartschedule.domain.repository.EmployeeRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import javax.inject.Inject
 
-class EmployeeRepositoryImpl(
+class EmployeeRepositoryImpl @Inject constructor(
     private val employeeDao: EmployeeDao
 ) : EmployeeRepository {
 

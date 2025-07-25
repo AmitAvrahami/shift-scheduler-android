@@ -22,10 +22,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.smartschedule.domain.models.Employee
+import com.example.smartschedule.domain.models.User
+import com.example.smartschedule.domain.models.UserStatus
+import com.example.smartschedule.domain.models.UserType
 
 @Composable
 fun EmployeeListScreen(
     modifier: Modifier = Modifier,
+    user: User,
     employees: List<Employee>,
     onAddEmployeeClick: () -> Unit = {},
     onViewShiftsClick: () -> Unit = {},
@@ -34,6 +38,7 @@ fun EmployeeListScreen(
 ) {
     Scaffold(
         floatingActionButton = {
+            if (user.type.canManageEmployees()){
             FloatingActionButton(
                 onClick = onAddEmployeeClick,
                 modifier = Modifier.padding(16.dp)
@@ -43,6 +48,7 @@ fun EmployeeListScreen(
                     contentDescription = "Add Employee"
                 )
             }
+                }
         }
     ) { innerPadding ->
         Column(
@@ -87,8 +93,19 @@ fun EmployeeListScreenPreview() {
         )
     )
 
+    val sampleUser = User(
+        id = "sampleUid",
+        name = "נחום ברנע",
+        email = "user@example.com",
+        type = UserType.MANAGER,
+        status = UserStatus.ACTIVE
+    )
+
+
+
     EmployeeListScreen(
         employees = sampleEmployees,
-        onDeleteEmployeeClick = {}
+        onDeleteEmployeeClick = {},
+        user = sampleUser
         )
 }

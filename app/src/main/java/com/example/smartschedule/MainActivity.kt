@@ -16,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -23,6 +24,8 @@ import com.example.smartschedule.domain.models.Employee
 import com.example.smartschedule.domain.models.Schedule
 import com.example.smartschedule.domain.models.Shift
 import com.example.smartschedule.domain.models.ShiftType
+import com.example.smartschedule.domain.models.User
+import com.example.smartschedule.domain.models.UserType
 import com.example.smartschedule.domain.validation.ShiftValidation
 import com.example.smartschedule.presentation.auth.LoginScreen
 import com.example.smartschedule.presentation.dashboard.ManagerDashboard
@@ -33,7 +36,12 @@ import com.example.smartschedule.presentation.navigation.Routes
 import com.example.smartschedule.presentation.shift.AddShiftScreen
 import com.example.smartschedule.presentation.shift.EditShiftScreen
 import com.example.smartschedule.presentation.shift.ShiftListScreen
+import com.example.smartschedule.presentation.user.AddUserScreen
 import com.example.smartschedule.presentation.user.UserListScreen
+import com.example.smartschedule.presentation.viewmodel.EmployeeViewModel
+import com.example.smartschedule.presentation.viewmodel.LoginViewModel
+import com.example.smartschedule.presentation.viewmodel.ShiftViewModel
+import com.example.smartschedule.presentation.viewmodel.UserViewModel
 import com.example.smartschedule.ui.theme.SmartScheduleTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -46,6 +54,9 @@ class MainActivity : ComponentActivity() {
 
     private fun generateEmployeeId(): String {
         return "emp_${System.currentTimeMillis()}"
+    }
+    private fun generateUserId(): String {
+        return "user_${System.currentTimeMillis()}"
     }
 
     private fun generateShiftId(): String {
@@ -70,7 +81,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // ✅ No manual initialization - Hilt handles everything!
 
         enableEdgeToEdge()
         testDataModels()
@@ -78,6 +88,14 @@ class MainActivity : ComponentActivity() {
             SmartScheduleTheme {
                 val navController = rememberNavController()
                 val coroutineScope = rememberCoroutineScope()
+
+                var currentUser by remember { mutableStateOf<User?>(null) }
+
+                //View Models
+                val loginViewModel: LoginViewModel = hiltViewModel()
+                val userViewModel: UserViewModel = hiltViewModel()
+                val employeeViewModel: EmployeeViewModel = hiltViewModel()
+                val shiftViewModel: ShiftViewModel = hiltViewModel()
 
                 // TODO: These will be replaced with ViewModels later
                 var employees by remember { mutableStateOf(listOf<Employee>()) }
@@ -108,77 +126,70 @@ class MainActivity : ComponentActivity() {
                         composable(Routes.LOGIN){
                             LoginScreen(
                                 modifier = Modifier.padding(innerPadding),
-                                onLoginSuccess = { userType ->
-                                    Log.d("MainActivity", "🎉 התחברות הצליחה - סוג משתמש: $userType")
-                                    when (userType) {
-                                        "employee" -> {
-                                            Log.d("MainActivity", "📱 מנווט ללוח בקרה עובד")
-                                            navController.navigate(Routes.EMPLOYEE_LIST)
-                                        }
-                                        "manager" -> {
-                                            Log.d("MainActivity", "👔 מנווט ללוח בקרה מנהל")
-                                            navController.navigate(Routes.MANAGER_DASHBOARD)
-                                        }
-                                        "admin" -> {
-                                            Log.d("MainActivity","שלופ אדמין")
-                                            navController.navigate(Routes.MANAGER_DASHBOARD)
-                                        }
-                                        else -> {
-                                            Log.e("MainActivity", "❌ סוג משתמש לא מוכר: $userType")
-                                        }
-                                    }
-                                }
+                               onLoginSuccess = { user ->
+                                   Log.d("MainActivity", "🎉 התחברות הצליחה - משתמש: ${user.name}")
+                                   currentUser = user
+                                   when (user.type) {
+                                       UserType.EMPLOYEE -> navController.navigate(Routes.EMPLOYEE_LIST)
+                                       UserType.MANAGER -> navController.navigate(Routes.MANAGER_DASHBOARD)
+                                       UserType.ADMIN -> navController.navigate(Routes.MANAGER_DASHBOARD)
+                                   }
+                               }
                             )
                         }
 
                         composable(Routes.MANAGER_DASHBOARD){
-                            ManagerDashboard(
-                                modifier = Modifier.padding(innerPadding),
-                                onViewEmployeesClick = {
-                                    navController.navigate(Routes.EMPLOYEE_LIST)
-                                },
-                                onViewShiftsClick = {
-                                    navController.navigate(Routes.SHIFT_LIST)
-                                },
-                                onViewUsersClick = {
-                                    navController.navigate(Routes.USER_LIST)
-                                }
-                            )
+                            currentUser?.let { user ->
+                                ManagerDashboard(
+                                    user = user,
+                                    modifier = Modifier.padding(innerPadding),
+                                    onViewEmployeesClick = {
+                                        navController.navigate(Routes.EMPLOYEE_LIST)
+                                    },
+                                    onViewShiftsClick = {
+                                        navController.navigate(Routes.SHIFT_LIST)
+                                    },
+                                    onViewUsersClick = {
+                                        navController.navigate(Routes.USER_LIST)
+                                    }
+                                )
+                            }
                         }
 
-                        composable(Routes.EMPLOYEE_LIST){
-                            EmployeeListScreen(
-                                modifier = Modifier.padding(innerPadding),
-                                onAddEmployeeClick = {
-                                    navController.navigate(Routes.ADD_EMPLOYEE)
-                                },
-                                employees = employees,
-                                onViewShiftsClick = {
-                                    navController.navigate(Routes.SHIFT_LIST)
-                                },
-                                onEditEmployeeClick = { selectedEmployee ->
-                                    selectedEmployeeForEdit = selectedEmployee
-                                    navController.navigate(Routes.EDIT_EMPLOYEE)
-                                },
-                                onDeleteEmployeeClick = {selectedEmployee ->
-                                    employeeToDelete = selectedEmployee
-                                    showDeleteConfirmationDialog = true
-                                }
-                            )
+                        composable(Routes.EMPLOYEE_LIST) {
+                            currentUser?.let { user ->
+                                EmployeeListScreen(
+                                    modifier = Modifier.padding(innerPadding),
+                                    user = user,
+                                    onAddEmployeeClick = {
+                                        navController.navigate(Routes.ADD_EMPLOYEE)
+                                    },
+                                    employees = employeeViewModel.employees.value,
+                                    onViewShiftsClick = {
+                                        navController.navigate(Routes.SHIFT_LIST)
+                                    },
+                                    onEditEmployeeClick = { selectedEmployee ->
+                                        selectedEmployeeForEdit = selectedEmployee
+                                        navController.navigate(Routes.EDIT_EMPLOYEE)
+                                    },
+                                    onDeleteEmployeeClick = { selectedEmployee ->
+                                        employeeToDelete = selectedEmployee
+                                        showDeleteConfirmationDialog = true
+                                    }
+                                )
+                            }
                         }
 
                         composable(Routes.ADD_EMPLOYEE){
                             AddEmployeeScreen(
-                                onSaveClick = { newEmployee ->
+                                modifier = Modifier.padding(innerPadding),
+                                onSaveClick = { newEmployee, password ->
                                     // TODO: Replace with ViewModel call
-                                    val employeeWithId = newEmployee.copy(
+                                    val newEmployeeWithId = newEmployee.copy(
                                         id = generateEmployeeId()
                                     )
-                                    employees = employees + employeeWithId
-                                    Log.d("AddEmployee", "נוצר עובד: ${newEmployee.name}")
-
-                                    currentEmployeeNumber = ""
-                                    employeeNumberError = null
+                                    userViewModel.addUser(newEmployeeWithId, password)
+                                    employeeViewModel.addEmployee(newEmployeeWithId)
                                     navController.popBackStack()
                                 },
                                 onBackClick = {
@@ -197,21 +208,24 @@ class MainActivity : ComponentActivity() {
                         }
 
                         composable(Routes.SHIFT_LIST) {
-                            ShiftListScreen(
-                                modifier = Modifier.padding(innerPadding),
-                                shifts = shifts,
-                                onAddShiftClick = {
-                                    navController.navigate(Routes.ADD_SHIFT)
-                                },
-                                onEditShiftClick = {selectedShift ->
-                                    selectedShiftForEdit = selectedShift
-                                    navController.navigate(Routes.EDIT_SHIFT)
-                                },
-                                onDeleteShiftClick = {selectedShift ->
-                                    shiftToDelete = selectedShift
-                                    showDeleteShiftConfirmationDialog = true
-                                }
-                            )
+                            currentUser?.let { user ->
+                                ShiftListScreen(
+                                    user = user,
+                                    modifier = Modifier.padding(innerPadding),
+                                    shifts = shifts,
+                                    onAddShiftClick = {
+                                        navController.navigate(Routes.ADD_SHIFT)
+                                    },
+                                    onEditShiftClick = { selectedShift ->
+                                        selectedShiftForEdit = selectedShift
+                                        navController.navigate(Routes.EDIT_SHIFT)
+                                    },
+                                    onDeleteShiftClick = { selectedShift ->
+                                        shiftToDelete = selectedShift
+                                        showDeleteShiftConfirmationDialog = true
+                                    }
+                                )
+                            }
                         }
 
                         composable(Routes.ADD_SHIFT) {
@@ -282,9 +296,64 @@ class MainActivity : ComponentActivity() {
                         }
 
                         composable(Routes.USER_LIST) {
-                            UserListScreen(
-                                modifier = Modifier.padding(innerPadding)
-                            )
+                            currentUser?.let { user ->
+                                UserListScreen(
+                                    modifier = Modifier.padding(innerPadding),
+                                    currentUser = user,
+                                    onAddUserClick = {
+                                        navController.navigate(Routes.ADD_USER)
+                                    }
+                                )
+                            }
+                        }
+
+                        composable(Routes.ADD_USER){
+                            currentUser?.let { user ->
+                                AddUserScreen(
+                                    modifier = Modifier.padding(innerPadding),
+                                    currentUser = user,
+                                    onSaveClick = { newUser, password ->
+                                        coroutineScope.launch {
+                                            try {
+                                                when (newUser) {
+                                                    is Employee, -> {
+                                                        Log.d("MainActivity","המשתמש הוא עובד")
+                                                        val employeeWithId = newUser.copy(
+                                                            id = generateEmployeeId()
+                                                        )
+                                                        userViewModel.addUser(employeeWithId,password)
+                                                        employeeViewModel.addEmployee(employeeWithId)
+                                                        Log.d("AddUser", "נוצר עובד/מנהל: ${employeeWithId.name}")
+                                                    }
+
+                                                    else -> {
+                                                        Log.d("MainActivity","המשתמש הוא אדמין")
+                                                        val userWithId = User(
+                                                            id = generateUserId(),
+                                                            name = newUser.name,
+                                                            email = newUser.email,
+                                                            type = newUser.type,
+                                                            status = newUser.status,
+                                                            createdDate = newUser.createdDate
+                                                        )
+                                                        userViewModel.addUser(userWithId,password)
+                                                        Log.d("AddUser", "נוצר אדמין: ${userWithId.name}")
+
+
+                                                    }
+                                                }
+                                                navController.popBackStack()
+                                            } catch (e: Exception) {
+                                                Log.e("AddUser", "שגיאה ביצירת משתמש: ${e.message}")
+                                            }
+                                        }
+                                    },
+                                    onBackClick = {
+                                        navController.popBackStack()
+                                    }
+                                )
+                            }
+
                         }
                     }
 

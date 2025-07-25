@@ -8,10 +8,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.smartschedule.domain.models.User
+import com.example.smartschedule.domain.models.UserStatus
+import com.example.smartschedule.domain.models.UserType
 
 @Composable
 fun ManagerDashboard(
     modifier: Modifier = Modifier,
+    user: User,
     onViewEmployeesClick: () -> Unit = {},
     onViewShiftsClick: () -> Unit = {},
     onViewUsersClick : () -> Unit = {}
@@ -42,11 +46,14 @@ fun ManagerDashboard(
             Text("ניהול משמרות")
         }
 
-        Button(
-            onClick = onViewUsersClick,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("ניהול משתמשים")
+
+        if (user.type.canCreateManagers()){
+            Button(
+                onClick = onViewUsersClick,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("ניהול משתמשים")
+            }
         }
     }
 }
@@ -54,5 +61,12 @@ fun ManagerDashboard(
 @Preview(showBackground = true)
 @Composable
 fun ManagerDashboardPreview() {
-    ManagerDashboard()
+    val sampleUser = User(
+        id = "manager123",
+        name = "רון שרוני",
+        type = UserType.ADMIN,
+        email = "manager@example.com",
+        status = UserStatus.ACTIVE
+    )
+    ManagerDashboard(user = sampleUser)
 }

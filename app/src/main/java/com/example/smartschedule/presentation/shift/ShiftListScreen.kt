@@ -15,12 +15,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.smartschedule.domain.models.Shift
 import com.example.smartschedule.domain.models.ShiftType
+import com.example.smartschedule.domain.models.User
+import com.example.smartschedule.domain.models.UserType
 import java.time.LocalDateTime
 
 @Composable
 fun ShiftListScreen(
-    shifts: List<Shift>,
     modifier: Modifier = Modifier,
+    user: User,
+    shifts: List<Shift>,
     onAddShiftClick: () -> Unit = {},
     onEditShiftClick: (Shift) -> Unit = {},
     onDeleteShiftClick: (Shift) -> Unit = {}
@@ -29,13 +32,15 @@ fun ShiftListScreen(
 
     Scaffold(
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = onAddShiftClick
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Add Shift"
-                )
+            if(user.type.canManageSchedules()) {
+                FloatingActionButton(
+                    onClick = onAddShiftClick
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Add Shift"
+                    )
+                }
             }
         }
     ) { innerPadding ->
@@ -59,6 +64,14 @@ fun ShiftListScreen(
 @Preview(showBackground = true)
 @Composable
 fun ShiftListScreenPreview() {
+
+    val user = User(
+        id = "1",
+        name = "שאול ביטון",
+        email = "manager@example.com",
+        type = UserType.MANAGER,
+    )
+
     val sampleShifts = listOf(
         Shift(
             id = "1",
@@ -70,6 +83,7 @@ fun ShiftListScreenPreview() {
     )
 
     ShiftListScreen(
+        user = user,
         shifts = sampleShifts,
         onAddShiftClick = { },
         onEditShiftClick = { }
