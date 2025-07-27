@@ -29,16 +29,16 @@ import com.example.smartschedule.domain.models.UserType
 import com.example.smartschedule.domain.validation.ShiftValidation
 import com.example.smartschedule.presentation.auth.LoginScreen
 import com.example.smartschedule.presentation.dashboard.ManagerDashboard
-import com.example.smartschedule.presentation.employee.AddEmployeeScreen
-import com.example.smartschedule.presentation.employee.EditEmployeeScreen
-import com.example.smartschedule.presentation.employee.EmployeeListScreen
+import com.example.smartschedule.presentation.employee.add_employee_screen.AddEmployeeScreen
+import com.example.smartschedule.presentation.employee.edit_employee_screen.EditEmployeeScreen
+import com.example.smartschedule.presentation.employee.employee_list_screen.EmployeeListScreen
 import com.example.smartschedule.presentation.navigation.Routes
 import com.example.smartschedule.presentation.shift.AddShiftScreen
 import com.example.smartschedule.presentation.shift.EditShiftScreen
 import com.example.smartschedule.presentation.shift.ShiftListScreen
-import com.example.smartschedule.presentation.user.AddUserScreen
+import com.example.smartschedule.presentation.user.add_user_screen.AddUserScreen
 import com.example.smartschedule.presentation.user.UserListScreen
-import com.example.smartschedule.presentation.viewmodel.EmployeeViewModel
+import com.example.smartschedule.presentation.employee.employee_list_screen.EmployeeListViewModel
 import com.example.smartschedule.presentation.viewmodel.LoginViewModel
 import com.example.smartschedule.presentation.viewmodel.ShiftViewModel
 import com.example.smartschedule.presentation.viewmodel.UserViewModel
@@ -94,7 +94,7 @@ class MainActivity : ComponentActivity() {
                 //View Models
                 val loginViewModel: LoginViewModel = hiltViewModel()
                 val userViewModel: UserViewModel = hiltViewModel()
-                val employeeViewModel: EmployeeViewModel = hiltViewModel()
+                val employeeViewModel: EmployeeListViewModel = hiltViewModel()
                 val shiftViewModel: ShiftViewModel = hiltViewModel()
 
                 // TODO: These will be replaced with ViewModels later
@@ -109,7 +109,6 @@ class MainActivity : ComponentActivity() {
 
                 //validation Employee vars
                 var currentEmployeeNumber by remember { mutableStateOf("") }
-                var employeeNumberError by remember { mutableStateOf<String?>(null) }
 
                 //Shift Edit Vars
                 var selectedShiftForEdit by remember { mutableStateOf<Shift?>(null) }
@@ -164,7 +163,6 @@ class MainActivity : ComponentActivity() {
                                     onAddEmployeeClick = {
                                         navController.navigate(Routes.ADD_EMPLOYEE)
                                     },
-                                    employees = employeeViewModel.employees.value,
                                     onViewShiftsClick = {
                                         navController.navigate(Routes.SHIFT_LIST)
                                     },
@@ -175,7 +173,7 @@ class MainActivity : ComponentActivity() {
                                     onDeleteEmployeeClick = { selectedEmployee ->
                                         employeeToDelete = selectedEmployee
                                         showDeleteConfirmationDialog = true
-                                    }
+                                    },
                                 )
                             }
                         }
@@ -183,27 +181,11 @@ class MainActivity : ComponentActivity() {
                         composable(Routes.ADD_EMPLOYEE){
                             AddEmployeeScreen(
                                 modifier = Modifier.padding(innerPadding),
-                                onSaveClick = { newEmployee, password ->
-                                    // TODO: Replace with ViewModel call
-                                    val newEmployeeWithId = newEmployee.copy(
-                                        id = generateEmployeeId()
-                                    )
-                                    userViewModel.addUser(newEmployeeWithId, password)
-                                    employeeViewModel.addEmployee(newEmployeeWithId)
-                                    navController.popBackStack()
-                                },
+                                onSaveSuccess = {},
                                 onBackClick = {
                                     currentEmployeeNumber = ""
-                                    employeeNumberError = null
                                     navController.popBackStack()
                                 },
-                                employeeNumberError = employeeNumberError,
-                                onEmployeeNumberChanged = { newNumber ->
-                                    currentEmployeeNumber = newNumber
-                                    coroutineScope.launch {
-                                        employeeNumberError = validateEmployeeNumber(newNumber, employees.size)
-                                    }
-                                }
                             )
                         }
 
@@ -312,32 +294,33 @@ class MainActivity : ComponentActivity() {
                                 AddUserScreen(
                                     modifier = Modifier.padding(innerPadding),
                                     currentUser = user,
-                                    onSaveClick = { newUser, password ->
+                                    onSaveClick = { newUser ->
                                         coroutineScope.launch {
                                             try {
                                                 when (newUser) {
                                                     is Employee, -> {
                                                         Log.d("MainActivity","המשתמש הוא עובד")
-                                                        val employeeWithId = newUser.copy(
-                                                            id = generateEmployeeId()
-                                                        )
-                                                        userViewModel.addUser(employeeWithId,password)
-                                                        employeeViewModel.addEmployee(employeeWithId)
-                                                        Log.d("AddUser", "נוצר עובד/מנהל: ${employeeWithId.name}")
+//                                                        val employeeWithId = newUser.copy(
+//                                                            id = generateEmployeeId()
+//                                                        )
+//                                                        userViewModel.addUser(employeeWithId,password)
+//                                                        employeeViewModel.addEmployee(employeeWithId)
+//                                                        Log.d("AddUser", "נוצר עובד/מנהל: ${employeeWithId.name}")
                                                     }
 
                                                     else -> {
                                                         Log.d("MainActivity","המשתמש הוא אדמין")
-                                                        val userWithId = User(
-                                                            id = generateUserId(),
-                                                            name = newUser.name,
-                                                            email = newUser.email,
-                                                            type = newUser.type,
-                                                            status = newUser.status,
-                                                            createdDate = newUser.createdDate
-                                                        )
-                                                        userViewModel.addUser(userWithId,password)
-                                                        Log.d("AddUser", "נוצר אדמין: ${userWithId.name}")
+//                                                        val userWithId = User(
+//                                                            id = generateUserId(),
+//                                                            name = newUser.name,
+//                                                            email = newUser.email,
+//                                                            type = newUser.type,
+//                                                            status = newUser.status,
+//                                                            createdDate = newUser.createdDate
+//                                                        )
+//                                                        userViewModel.addUser(userWithId)
+//                                                        Log.d("AddUser", "נוצר אדמין: ${userWithId.name}")
+                                                        Log.d("AddUser", "נוצר אדמין: ")
 
 
                                                     }

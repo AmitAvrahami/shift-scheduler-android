@@ -1,6 +1,5 @@
-package com.example.smartschedule.presentation.employee
+package com.example.smartschedule.presentation.employee.components
 
-import android.text.Layout
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column

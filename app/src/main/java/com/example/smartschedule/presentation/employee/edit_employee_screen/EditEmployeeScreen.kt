@@ -1,4 +1,4 @@
-package com.example.smartschedule.presentation.employee
+package com.example.smartschedule.presentation.employee.edit_employee_screen
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
