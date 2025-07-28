@@ -3,11 +3,15 @@ package com.example.smartschedule.presentation.employee.employee_list_screen
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.smartschedule.domain.common.fold
+import com.example.smartschedule.domain.errors.employee_error.EmployeeError
 import com.example.smartschedule.domain.models.Employee
 import com.example.smartschedule.domain.repository.EmployeeRepository
 import com.example.smartschedule.domain.usecase.AddEmployeeUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -35,6 +39,117 @@ class EmployeeListViewModel @Inject constructor(
         setupSearch()
     }
 
+    // ✅ Load employees with Result handling
+    fun loadEmployees() {
+        Log.d("EmployeeViewModel", "🚀 loadEmployees() called")
+
+        viewModelScope.launch {
+            _state.value = _state.value.copy(
+                isLoading = true,
+                errorMessage = null
+            )
+
+            try {
+                employeeRepository.getAllEmployees()
+                    .collect { result ->
+                        result.fold(
+                            onSuccess = { employees ->
+                                Log.d("EmployeeViewModel", "✅ Loaded ${employees.size} employees")
+                                _allEmployees.value = employees
+                                _state.value = _state.value.copy(
+                                    employees = employees,
+                                    isLoading = false,
+                                    errorMessage = null
+                                )
+                            },
+                            onError = { error ->
+                                Log.e("EmployeeViewModel", "❌ Failed to load employees", error)
+                                _state.value = _state.value.copy(
+                                    isLoading = false,
+                                    errorMessage = error.toUserFriendlyMessage()
+                                )
+                            }
+                        )
+                    }
+            } catch (e: Exception) {
+                Log.e("EmployeeViewModel", "❌ Exception in loadEmployees", e)
+                _state.value = _state.value.copy(
+                    isLoading = false,
+                    errorMessage = "שגיאה בטעינת עובדים: ${e.message}"
+                )
+            }
+        }
+    }
+
+
+
+
+    fun refreshEmployees() {
+        Log.d("EmployeeViewModel", "🔄 refreshEmployees() called")
+
+        val startTime = System.currentTimeMillis()
+        _state.value = _state.value.copy(isRefreshing = true, errorMessage = null)
+
+        viewModelScope.launch {
+            try {
+                employeeRepository.refreshEmployees().fold(
+                    onSuccess = { employees ->
+                        Log.d("EmployeeViewModel", "✅ Refresh completed - ${employees.size} employees")
+
+                        // Ensure minimum loading duration for UX
+                        val elapsed = System.currentTimeMillis() - startTime
+                        if (elapsed < MIN_LOADING_DURATION) {
+                            delay(MIN_LOADING_DURATION - elapsed)
+                        }
+
+                        _allEmployees.value = employees
+                        _state.value = _state.value.copy(
+                            employees = employees,
+                            isRefreshing = false,
+                            errorMessage = null
+                        )
+                    },
+                    onError = { error ->
+                        Log.e("EmployeeViewModel", "❌ Refresh failed", error)
+                        _state.value = _state.value.copy(
+                            isRefreshing = false,
+                            errorMessage = error.toUserFriendlyMessage()
+                        )
+                    }
+                )
+            } catch (e: Exception) {
+                Log.e("EmployeeViewModel", "❌ Exception in refreshEmployees", e)
+                _state.value = _state.value.copy(
+                    isRefreshing = false,
+                    errorMessage = "שגיאה ברענון רשימת עובדים"
+                )
+            }
+        }
+    }
+
+
+    companion object {
+        private const val MIN_LOADING_DURATION = 500L
+    }
+
+    // ✅ Delete employee with Result Pattern
+    fun deleteEmployee(employee: Employee) {
+        viewModelScope.launch {
+            employeeRepository.deleteEmployee(employee).fold(
+                onSuccess = {
+                    Log.d("EmployeeViewModel", "✅ Employee deleted: ${employee.name}")
+                    // Success - the Flow will automatically update the UI
+                },
+                onError = { error ->
+                    Log.e("EmployeeViewModel", "❌ Failed to delete employee", error)
+                    _state.value = _state.value.copy(
+                        errorMessage = error.toUserFriendlyMessage()
+                    )
+                }
+            )
+        }
+    }
+
     @OptIn(FlowPreview::class)
     private fun setupSearch() {
         viewModelScope.launch {
@@ -59,44 +174,6 @@ class EmployeeListViewModel @Inject constructor(
             }
         }
     }
-    fun loadEmployees() {
-        Log.d("DEBUG", "🚀 loadEmployees() נקרא")
-
-        viewModelScope.launch {
-            Log.d("DEBUG", "🔄 נכנס ל-viewModelScope")
-
-            _state.value = _state.value.copy(
-                isLoading = true,
-                errorMessage = null
-            )
-
-            Log.d("DEBUG", "✅ isLoading הוגדר ל-true")
-
-            try {
-                Log.d("DEBUG", "📡 קורא ל-employeeRepository.getAllEmployees()")
-
-                val employees = employeeRepository.getAllEmployees().first()
-
-                Log.d("DEBUG", "📦 קיבל ${employees.size} עובדים")
-
-                _allEmployees.value = employees
-                _state.value = _state.value.copy(
-                    employees = employees,
-                    isLoading = false,
-                    errorMessage = null
-                )
-
-                Log.d("DEBUG", "✅ isLoading הוגדר ל-false")
-
-            } catch (e: Exception) {
-                Log.e("DEBUG", "❌ Exception: ${e.message}", e)
-                _state.value = _state.value.copy(
-                    isLoading = false,
-                    errorMessage = "שגיאה בטעינת עובדים: ${e.message}"
-                )
-            }
-        }
-    }
 
     fun updateSearchQuery(query: String) {
         _searchQuery.value = query
@@ -107,72 +184,38 @@ class EmployeeListViewModel @Inject constructor(
         updateSearchQuery("")
     }
 
-
-
-    fun refreshEmployees() {
-        Log.d("REFRESH_DEBUG", "🔄 refreshEmployees() נקרא")
-
-        _state.value = _state.value.copy(isRefreshing = true)
-        Log.d("REFRESH_DEBUG", "✅ isRefreshing הוגדר ל-true")
-
-        viewModelScope.launch {
-            Log.d("REFRESH_DEBUG", "🚀 נכנס ל-viewModelScope של refresh")
-
-            try {
-                Log.d("REFRESH_DEBUG", "📡 קורא ל-employeeRepository.getAllEmployees().first()")
-
-                val employees = employeeRepository.getAllEmployees().first()
-
-                Log.d("REFRESH_DEBUG", "📦 Refresh קיבל ${employees.size} עובדים")
-
-                _allEmployees.value = employees
-                Log.d("REFRESH_DEBUG", "🔄 _allEmployees עודכן")
-
-                _state.value = _state.value.copy(
-                    employees = employees,
-                    isRefreshing = false,
-                    errorMessage = null
-                )
-
-                Log.d("REFRESH_DEBUG", "✅ isRefreshing הוגדר ל-false, refresh הושלם")
-
-            } catch (e: Exception) {
-                Log.e("REFRESH_DEBUG", "❌ Exception ב-refresh: ${e.message}", e)
-
-                _state.value = _state.value.copy(
-                    isRefreshing = false,
-                    errorMessage = "שגיאה ברענון רשימת עובדים"
-                )
-
-                Log.d("REFRESH_DEBUG", "🔧 isRefreshing הוגדר ל-false עקב שגיאה")
-            }
-        }
-    }
-
-    fun deleteEmployee(employee: Employee) {
-        viewModelScope.launch {
-            try {
-                employeeRepository.deleteEmployee(employee)
-                Log.d("EmployeeViewModel", "עובד נמחק: ${employee.name}")
-            } catch (e: Exception) {
-                _state.value = _state.value.copy(
-                    errorMessage = "שגיאה במחיקת עובד: ${e.message}"
-                )
-                Log.e("EmployeeViewModel", "שגיאה במחיקת עובד", e)
-            }
-        }
-    }
-
-    fun onLoadEmployeesSuccess(employees: List<Employee>) {
-        _state.value = _state.value.copy(
-            employees = employees
-        )
-    }
-
     fun clearError() {
         _state.value = _state.value.copy(errorMessage = null)
     }
 
 
+// File: presentation/common/ErrorExtensions.kt
 
+    fun Throwable.toUserFriendlyMessage(): String {
+        return when (this) {
+            is EmployeeError.DatabaseCorrupted ->
+                "מסד הנתונים פגום, נסה לאתחל את האפליקציה"
+
+            is EmployeeError.EmployeeNotFound ->
+                "העובד לא נמצא במערכת"
+
+            is EmployeeError.DuplicateEmployeeNumber ->
+                "מספר עובד ${this.employeeNumber} כבר קיים במערכת"
+
+            is EmployeeError.ValidationError ->
+                "${this.field}: ${this.reason}"
+
+            is EmployeeError.DatabaseError ->
+                "שגיאת מסד נתונים, נסה שוב"
+
+            is EmployeeError.NetworkUnavailable ->
+                "אין חיבור לאינטרנט"
+
+            is EmployeeError.ServerError ->
+                "שגיאת שרת (${this.code}), נסה שוב מאוחר יותר"
+
+            else ->
+                "שגיאה לא צפויה: ${this.message}"
+        }
+    }
 }

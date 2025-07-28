@@ -1,5 +1,6 @@
 package com.example.smartschedule.presentation.employee.employee_list_screen
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,11 +16,15 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
+import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -37,6 +42,7 @@ import com.example.smartschedule.presentation.employee.components.EmployeeCard
 import com.example.smartschedule.presentation.employee.components.EmployeeSearchBar
 import com.example.smartschedule.presentation.employee.components.EmptyEmployeeListState
 import com.example.smartschedule.presentation.employee.components.EmptySearchState
+import kotlinx.coroutines.delay
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,33 +54,24 @@ fun EmployeeListScreen(
     onViewShiftsClick: () -> Unit = {},
     onEditEmployeeClick: (Employee) -> Unit = {},
     onDeleteEmployeeClick: (Employee) -> Unit = {},
-    viewModel: EmployeeListViewModel? = hiltViewModel()
+    viewModel: EmployeeListViewModel = hiltViewModel()
 ) {
 
-    val state = viewModel?.state?.collectAsState()?.value ?: EmployeeListState(
-        employees = sampleEmployees(),
-        isLoading = false,
-        errorMessage = null
-    )
+    val state = viewModel.state.collectAsState()
     val snackBarHostState = remember { SnackbarHostState() }
     val pullToRefreshState = rememberPullToRefreshState()
 
-    LaunchedEffect(state.isRefreshing) {
-        android.util.Log.d("PullToRefresh", "state.isRefreshing changed: ${state.isRefreshing}")
-    }
-
-    LaunchedEffect(state.isLoading) {
-        android.util.Log.d("PullToRefresh", "pullToRefreshState.isRefreshing changed: ${state.isLoading}")
+    LaunchedEffect(state.value.isRefreshing) {
+        Log.d("EmployeeListScreen", "isRefreshing: ${state.value.isRefreshing}")
     }
 
 
 
 
-
-    LaunchedEffect(state.errorMessage) {
-        state.errorMessage?.let { error ->
+    LaunchedEffect(state.value.errorMessage) {
+        state.value.errorMessage?.let { error ->
             snackBarHostState.showSnackbar(error)
-            viewModel?.clearError()
+            viewModel.clearError()
         }
     }
     Scaffold(
@@ -93,67 +90,74 @@ fun EmployeeListScreen(
             }
         }
     ) { innerPadding ->
-        viewModel?.let {
-            PullToRefreshBox(
-                state = pullToRefreshState,
-                isRefreshing = state.isRefreshing,
-                onRefresh = it::refreshEmployees,
-                modifier = modifier.padding(innerPadding)
+        PullToRefreshBox(
+            isRefreshing = state.value.isRefreshing,
+            onRefresh = viewModel::refreshEmployees,
+            modifier = modifier.padding(innerPadding),
+            state = pullToRefreshState,
+            indicator = {
+                Indicator(
+                    modifier = Modifier.align(Alignment.TopCenter),
+                    isRefreshing = state.value.isRefreshing,
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    color = MaterialTheme.colorScheme.onPrimaryContainer,
+                    state = pullToRefreshState
+                )
+            },
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                // View Shifts Button
+                Button(
+                    onClick = onViewShiftsClick,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    // View Shifts Button
-                    Button(
-                        onClick = onViewShiftsClick,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("צפייה במשמרות")
+                    Text("צפייה במשמרות")
+                }
+
+                // Search Bar
+                EmployeeSearchBar(
+                    searchQuery = state.value.searchQuery,
+                    onSearchQueryChange = viewModel::updateSearchQuery,
+                    onClearSearch = viewModel::clearSearch
+                )
+
+                // Content
+                when {
+                    state.value.isLoading -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
                     }
 
-                    // Search Bar
-                    EmployeeSearchBar(
-                        searchQuery = state.searchQuery,
-                        onSearchQueryChange = viewModel::updateSearchQuery,
-                        onClearSearch = viewModel::clearSearch
-                    )
+                    state.value.filteredEmployees.isEmpty() && state.value.searchQuery.isNotEmpty() -> {
+                        EmptySearchState(searchQuery = state.value.searchQuery)
+                    }
 
-                    // Content
-                    when {
-                        state.isLoading -> {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CircularProgressIndicator()
-                            }
-                        }
+                    state.value.employees.isEmpty() -> {
+                        EmptyEmployeeListState()
+                    }
 
-                        state.filteredEmployees.isEmpty() && state.searchQuery.isNotEmpty() -> {
-                            EmptySearchState(searchQuery = state.searchQuery)
-                        }
-
-                        state.employees.isEmpty() -> {
-                            EmptyEmployeeListState()
-                        }
-
-                        else -> {
-                            LazyColumn(
-                                verticalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                items(state.filteredEmployees) { employee ->
-                                    EmployeeCard(
-                                        employee = employee,
-                                        onEditClick = onEditEmployeeClick,
-                                        onDeleteClick = {
-                                            viewModel.deleteEmployee(employee)
-                                            onDeleteEmployeeClick(employee)
-                                        }
-                                    )
-                                }
+                    else -> {
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            items(state.value.filteredEmployees) { employee ->
+                                EmployeeCard(
+                                    employee = employee,
+                                    onEditClick = onEditEmployeeClick,
+                                    onDeleteClick = {
+                                        viewModel.deleteEmployee(employee)
+                                        onDeleteEmployeeClick(employee)
+                                    }
+                                )
                             }
                         }
                     }
@@ -193,7 +197,7 @@ private fun sampleUser(): User {
 fun EmployeeListScreenPreview() {
 
     EmployeeListScreen(
-        viewModel = null,
+//        viewModel = null,
         onAddEmployeeClick = {},
         onViewShiftsClick = {},
         onEditEmployeeClick = {},
