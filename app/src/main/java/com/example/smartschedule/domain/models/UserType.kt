@@ -13,7 +13,7 @@ enum class UserType(val displayName: String) {
      * בודק אם המשתמש יכול ליצור מנהלים חדשים
      * רק אדמין יכול ליצור מנהלים!
      */
-    fun canCreateManagers(): Boolean = when(this) {
+    fun canCreateManagers(): Boolean = when (this) {
         EMPLOYEE, MANAGER -> false
         ADMIN -> true
     }
@@ -22,7 +22,7 @@ enum class UserType(val displayName: String) {
      * בודק אם המשתמש יכול ליצור ולערוך סידורי עבודה
      * זה הליבה של האפליקציה - רק מנהלים ומעלה!
      */
-    fun canManageSchedules(): Boolean = when(this) {
+    fun canManageSchedules(): Boolean = when (this) {
         EMPLOYEE -> false
         MANAGER, ADMIN -> true
     }
@@ -31,7 +31,7 @@ enum class UserType(val displayName: String) {
      * בודק אם המשתמש יכול לאשר החלפות משמרות בין עובדים
      * עובד יכול לבקש החלפה, אבל רק מנהל יכול לאשר!
      */
-    fun canApproveShiftSwaps(): Boolean = when(this) {
+    fun canApproveShiftSwaps(): Boolean = when (this) {
         EMPLOYEE -> false
         MANAGER, ADMIN -> true
     }
@@ -40,7 +40,7 @@ enum class UserType(val displayName: String) {
      * בודק אם המשתמש יכול לצפות בדוחות עובדים
      * מנהל רואה דוחות של העובדים שלו, אדמין רואה הכל
      */
-    fun canViewReports(): Boolean = when(this) {
+    fun canViewReports(): Boolean = when (this) {
         EMPLOYEE -> false
         MANAGER, ADMIN -> true
     }
@@ -49,7 +49,7 @@ enum class UserType(val displayName: String) {
      * בודק אם המשתמש יכול לנהל עובדים (עריכה, מחיקה, הוספה)
      * זה כולל עריכת פרטים אישיים, העברת עובדים בין מחלקות וכו'
      */
-    fun canManageEmployees(): Boolean = when(this) {
+    fun canManageEmployees(): Boolean = when (this) {
         EMPLOYEE -> false
         MANAGER, ADMIN -> true
     }
@@ -59,7 +59,7 @@ enum class UserType(val displayName: String) {
      * דברים כמו: מקסימום שעות בשבוע, זמן מנוחה בין משמרות וכו'
      * זה רגיש מאוד - רק אדמין!
      */
-    fun canManageSystemRules(): Boolean = when(this) {
+    fun canManageSystemRules(): Boolean = when (this) {
         EMPLOYEE, MANAGER -> false
         ADMIN -> true
     }
@@ -69,7 +69,7 @@ enum class UserType(val displayName: String) {
      * כולם יכולים לצפות - אבל כל אחד ברמה שלו:
      * עובד רואה רק את הסידור שלו, מנהל רואה את כולם
      */
-    fun canViewSchedules(): Boolean = when(this) {
+    fun canViewSchedules(): Boolean = when (this) {
         EMPLOYEE, MANAGER, ADMIN -> true
     }
 }

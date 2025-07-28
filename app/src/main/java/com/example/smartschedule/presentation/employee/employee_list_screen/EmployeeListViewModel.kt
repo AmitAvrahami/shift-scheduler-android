@@ -39,7 +39,20 @@ class EmployeeListViewModel @Inject constructor(
         setupSearch()
     }
 
-    // ✅ Load employees with Result handling
+    /**
+     * Loads the list of employees from the repository.
+     *
+     * This function initiates an asynchronous operation to fetch all employees.
+     * It updates the [EmployeeListState.isLoading] to `true` at the beginning and sets it to `false` upon completion or error.
+     * - On success, it updates the [EmployeeListState.employees] and [_allEmployees] with the fetched list
+     *   and clears any existing [EmployeeListState.errorMessage].
+     * - On failure (either from the repository or an unexpected exception), it updates the
+     *   [EmployeeListState.errorMessage] with a user-friendly message.
+     *
+     * The operation is performed within the [viewModelScope] to ensure it's lifecycle-aware.
+     * It collects the `Result` from `employeeRepository.getAllEmployees()` and uses `fold`
+     * to handle success and error cases.
+     */// ✅ Load employees with Result handling
     fun loadEmployees() {
         Log.d("EmployeeViewModel", "🚀 loadEmployees() called")
 
@@ -84,6 +97,21 @@ class EmployeeListViewModel @Inject constructor(
 
 
 
+    /**
+     * Refreshes the list of employees from the repository.
+     *
+     * This function initiates a refresh operation to fetch the latest employee data.
+     * It updates the UI state to indicate that a refresh is in progress.
+     *
+     * On success:
+     * - Updates the internal `_allEmployees` flow with the new list.
+     * - Updates the UI state with the fetched employees, sets `isRefreshing` to false, and clears any error messages.
+     * - Ensures a minimum loading duration for a better user experience by delaying if the refresh completes too quickly.
+     *
+     * On failure (either from the repository or an unexpected exception):
+     * - Logs the error.
+     * - Updates the UI state by setting `isRefreshing` to false and displaying a user-friendly error message.
+     */
     fun refreshEmployees() {
         Log.d("EmployeeViewModel", "🔄 refreshEmployees() called")
 
@@ -132,7 +160,20 @@ class EmployeeListViewModel @Inject constructor(
         private const val MIN_LOADING_DURATION = 500L
     }
 
-    // ✅ Delete employee with Result Pattern
+    /**
+     * Deletes an employee from the repository.
+     *
+     * This function launches a coroutine in the viewModelScope to perform the delete operation
+     * asynchronously. It uses the `employeeRepository.deleteEmployee` method, which returns
+     * a `Result` object.
+     *
+     * - On success, it logs a debug message. The UI is expected to update automatically
+     *   due to the reactive nature of the underlying data Flow.
+     * - On error, it logs an error message and updates the `_state` with a user-friendly
+     *   error message, which can then be displayed in the UI.
+     *
+     * @param employee The [Employee] object to be deleted.
+     */// ✅ Delete employee with Result Pattern
     fun deleteEmployee(employee: Employee) {
         viewModelScope.launch {
             employeeRepository.deleteEmployee(employee).fold(
@@ -150,6 +191,22 @@ class EmployeeListViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Sets up a reactive search functionality.
+     *
+     * This function observes changes in the `_allEmployees` list and the `_searchQuery`.
+     * It combines these two flows and, after a debounce period of 300ms for the search query,
+     * filters the `_allEmployees` list based on the current query.
+     *
+     * The filtering logic checks if the query (case-insensitive) is contained within
+     * the employee's name, email, employee number, or the display name of their type.
+     *
+     * If the query is blank, all employees are shown.
+     * The resulting filtered list of employees is then used to update the `filteredEmployees`
+     * property of the `_state`.
+     *
+     * This function is typically called during the ViewModel's initialization.
+     */
     @OptIn(FlowPreview::class)
     private fun setupSearch() {
         viewModelScope.launch {
