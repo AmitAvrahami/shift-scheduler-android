@@ -2,7 +2,6 @@
 
 package com.example.smartschedule.domain.usecase
 
-import com.example.smartschedule.domain.common.AuthenticationResult
 import com.example.smartschedule.domain.common.Result
 import com.example.smartschedule.domain.models.User
 import com.example.smartschedule.domain.repository.UserRepository
@@ -10,20 +9,6 @@ import com.example.smartschedule.domain.repository.UserRepository
 class LoginUseCase(
     private val userRepository: UserRepository
 ) {
-
-    // ✅ EXISTING - Keep for backwards compatibility (temporary)
-    suspend fun execute(username: String, password: String): AuthenticationResult {
-        return try {
-            val user = userRepository.login(username, password)
-            if (user != null) {
-                AuthenticationResult.Success(user)
-            } else {
-                AuthenticationResult.Error("שם משתמש או סיסמה שגויים")
-            }
-        } catch (e: Exception) {
-            AuthenticationResult.Error("שגיאה בהתחברות: ${e.message}")
-        }
-    }
 
     // 🆕 NEW - Result<T> based implementation
     suspend fun executeWithResult(email: String, password: String): Result<User> {

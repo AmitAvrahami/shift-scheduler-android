@@ -2,6 +2,7 @@ package com.example.smartschedule.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.smartschedule.domain.common.fold
 import com.example.smartschedule.domain.models.User
 import com.example.smartschedule.domain.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -23,26 +24,24 @@ class LoginViewModel @Inject constructor(
     val errorMessage : StateFlow<String?> = _errorMessage.asStateFlow()
 
 
-
-    fun login(email: String, password: String, onLoginSuccess: (User) -> Unit){
+    fun login(email: String, password: String, onLoginSuccess: (User) -> Unit) {
         _isLoading.value = true
         _errorMessage.value = null
         viewModelScope.launch {
-            try {
-                val user = userRepository.login(email, password)
-                if (user != null){
+            userRepository.loginWithResult(email, password).fold(
+                onSuccess = { user ->
                     _isLoading.value = false
                     onLoginSuccess(user)
-                }else {
+                },
+                onError = { error ->
                     _isLoading.value = false
-                    _errorMessage.value = "שם משתמש או סיסמה שגויים"
+                    _errorMessage.value = error.message
                 }
-            }catch (e: Exception){
-                _isLoading.value = false
-                _errorMessage.value = "שגיאה בהתחברות: ${e.message}"
-            }
+            )
         }
     }
+
+
 
     suspend fun getCurrentUser() : User? {
         return userRepository.getCurrentUser()
