@@ -1,5 +1,6 @@
 package com.example.smartschedule.domain.repository
 
+import com.example.smartschedule.domain.common.Result
 import com.example.smartschedule.domain.models.User
 import kotlinx.coroutines.flow.Flow
 
@@ -18,4 +19,21 @@ interface UserRepository {
     suspend fun logout()
     suspend fun getCurrentUser(): User?
     suspend fun isLoggedIn(): Boolean
+
+
+    //TODO : Delete The Functions Without Result
+
+    // CRUD Operations with Result
+    suspend fun getUserByIdWithResult(id: String): Result<User?>
+    suspend fun getUserByEmailWithResult(email: String): Result<User?>
+    suspend fun isEmailExistsWithResult(email: String): Result<Boolean>
+    suspend fun insertUserWithResult(user: User): Result<User>
+    suspend fun deleteUserWithResult(user: User): Result<Boolean>
+
+    // Authentication Operations with Result
+    suspend fun registerUserWithResult(user: User, password: String): Result<User>
+    suspend fun loginWithResult(email: String, password: String): Result<User>
+    suspend fun logoutWithResult(): Result<Unit>
+    suspend fun getCurrentUserWithResult(): Result<User?>
+    suspend fun isLoggedInWithResult(): Result<Boolean>
 }
