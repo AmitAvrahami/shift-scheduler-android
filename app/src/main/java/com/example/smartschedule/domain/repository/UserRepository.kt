@@ -24,6 +24,7 @@ interface UserRepository {
     //TODO : Delete The Functions Without Result
 
     // CRUD Operations with Result
+    fun getAllUsersWithResult(): Flow<Result<List<User>>>
     suspend fun getUserByIdWithResult(id: String): Result<User?>
     suspend fun getUserByEmailWithResult(email: String): Result<User?>
     suspend fun isEmailExistsWithResult(email: String): Result<Boolean>

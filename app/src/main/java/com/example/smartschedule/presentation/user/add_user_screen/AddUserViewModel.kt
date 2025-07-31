@@ -27,9 +27,7 @@ class AddUserViewModel @Inject constructor(
     private val _state = MutableStateFlow(AddUserState())
     val state: StateFlow<AddUserState> = _state.asStateFlow()
 
-    // Email validation regex
 
-    // ============== UPDATE FUNCTIONS ==============
 
     fun updateName(name: String) {
         _state.value = _state.value.copy(
