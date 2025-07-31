@@ -6,6 +6,7 @@ import com.example.smartschedule.domain.models.User
 import com.example.smartschedule.domain.models.UserType
 import com.example.smartschedule.domain.repository.UserRepository
 import com.example.smartschedule.domain.validation.EmployeeValidation
+import com.example.smartschedule.domain.validation.UserValidation
 import com.example.smartschedule.domain.validation.ValidationResult
 import javax.inject.Inject
 
@@ -14,46 +15,89 @@ class RegisterUserUseCase @Inject constructor(
 ) {
 
     // 🆕 NEW - Result<T> based user registration
-    suspend fun executeWithResult(user: User, password: String): Result<User> {
-        // Input validation
-        val validationErrors = validateInput(user, password)
-        if (validationErrors.isNotEmpty()) {
-            val errorMessage = validationErrors.joinToString(", ")
-            return Result.Error(IllegalArgumentException(errorMessage))
-        }
+        suspend fun executeWithResult(
+            currentUser: User,
+            newUser: User,
+            password: String
+        ): Result<User> {
 
-        // Business rule validation
-        when (val emailValidation = validateEmailFormat(user.email)) {
-            is ValidationResult.Error -> {
-                return Result.Error(IllegalArgumentException(emailValidation.message))
+        try {// 🔐 STEP 1: בדיקת הרשאות לפני הכל
+            val authorizationResult = validateUserCreationPermissions(currentUser, newUser)
+            if (authorizationResult != null) {
+                return Result.Error(IllegalArgumentException(authorizationResult))
             }
-            ValidationResult.Success -> { /* Continue */ }
-        }
 
-        when (val passwordValidation = validatePassword(password)) {
-            is ValidationResult.Error -> {
-                return Result.Error(IllegalArgumentException(passwordValidation.message))
+            // 🔍 STEP 2: validation רגיל של נתונים (כמו שהיה קודם)
+            val validationErrors = validateInput(newUser, password)
+            if (validationErrors.isNotEmpty()) {
+                val errorMessage = validationErrors.joinToString(", ")
+                return Result.Error(IllegalArgumentException(errorMessage))
             }
-            ValidationResult.Success -> { /* Continue */ }
-        }
 
-        // Delegate to repository for actual registration
-        return userRepository.registerUserWithResult(user, password)
+            // ✅ STEP 3: validation פורמטים (כמו שהיה קודם)
+            when (val emailValidation = UserValidation.validateEmail(newUser.email)) {
+                is ValidationResult.Error -> {
+                    return Result.Error(IllegalArgumentException(emailValidation.message))
+                }
+                ValidationResult.Success -> { /* Continue */ }
+            }
+
+            when (val passwordValidation = UserValidation.validatePassword(password)) {
+                is ValidationResult.Error -> {
+                    return Result.Error(IllegalArgumentException(passwordValidation.message))
+                }
+                ValidationResult.Success -> { /* Continue */ }
+            }
+
+            // 🚀 STEP 4: אם הכל עבר - יוצרים את המשתמש
+            return userRepository.registerUserWithResult(newUser, password)
+        } catch (e: Exception) {
+            return Result.Error(e)
+        }
     }
+
+        // 🔐 פונקציה חדשה שבודקת הרשאות
+        private fun validateUserCreationPermissions(currentUser: User, newUser: User): String? {
+            return when (newUser.type) {
+                UserType.EMPLOYEE -> {
+                    // כל אחד יכול ליצור EMPLOYEE
+                    null
+                }
+                UserType.MANAGER -> {
+                    // רק ADMIN יכול ליצור MANAGER
+                    if (currentUser.type != UserType.ADMIN) {
+                        "רק מנהל מערכת יכול ליצור משתמש מנהל"
+                    } else null
+                }
+                UserType.ADMIN -> {
+                    // רק ADMIN יכול ליצור ADMIN אחר
+                    if (currentUser.type != UserType.ADMIN) {
+                        "רק מנהל מערכת יכול ליצור מנהל מערכת אחר"
+                    } else null
+                }
+            }
+        }
 
     private fun validateInput(user: User, password: String): List<String> {
         val errors = mutableListOf<String>()
 
-        if (user.name.isBlank()) {
-            errors.add("שם נדרש")
+        val nameValidationResult = UserValidation.validateName(user.name)
+        if (nameValidationResult is ValidationResult.Error) {
+            errors.add(nameValidationResult.message)
         }
 
-        if (user.email.isBlank()) {
-            errors.add("כתובת אימייל נדרשת")
+        when (val emailValidation = UserValidation.validateEmail(user.email)) {
+            is ValidationResult.Error -> {
+                errors.add(emailValidation.message)
+            }
+            ValidationResult.Success -> { /* Continue */ }
         }
 
-        if (password.isBlank()) {
-            errors.add("סיסמה נדרשת")
+        when (val passwordValidation = UserValidation.validatePassword(password)) {
+            is ValidationResult.Error -> {
+                errors.add(passwordValidation.message)
+            }
+            ValidationResult.Success -> { /* Continue */ }
         }
 
         // Admin users can only be created by other admins (future business rule)
@@ -64,11 +108,5 @@ class RegisterUserUseCase @Inject constructor(
         return errors
     }
 
-    private fun validateEmailFormat(email: String): ValidationResult {
-        return EmployeeValidation.validateEmail(email)
-    }
 
-    private fun validatePassword(password: String): ValidationResult {
-        return EmployeeValidation.validatePassword(password)
-    }
 }
