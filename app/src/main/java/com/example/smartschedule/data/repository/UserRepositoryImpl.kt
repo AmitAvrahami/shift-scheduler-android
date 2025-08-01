@@ -15,6 +15,8 @@ import javax.inject.Singleton
 import com.example.smartschedule.domain.common.Result
 import com.example.smartschedule.domain.common.safeUserDbOperation
 import com.example.smartschedule.domain.errors.user_error.UserError
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flow
 
 @Singleton
 class UserRepositoryImpl @Inject constructor(
@@ -30,6 +32,7 @@ class UserRepositoryImpl @Inject constructor(
             }
         }
     }
+
 
     override suspend fun insertUser(user: User) {
         userDao.insertUser(user.toEntity())
@@ -85,6 +88,21 @@ class UserRepositoryImpl @Inject constructor(
         return currentUser != null
 
     }
+
+    override fun getAllUsersWithResult(): Flow<Result<List<User>>> = flow {
+        try {
+            userDao.getAllUsers()
+                .map { entities -> entities.map { it.toDomain() } }
+                .collect { users ->
+                    emit(Result.Success(users))
+                }
+        } catch (e: Exception) {
+            emit(Result.Error(e))
+        }
+    }.catch { error ->
+        emit(Result.Error(error))
+    }
+
 
     override suspend fun registerUserWithResult(user: User, password: String): Result<User> =
         withContext(Dispatchers.IO) {
