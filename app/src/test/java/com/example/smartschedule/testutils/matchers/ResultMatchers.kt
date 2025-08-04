@@ -1,12 +1,13 @@
 
 package com.example.smartschedule.testutils.matchers
 
-import com.example.smartschedule.domain.common.Result
-import com.example.smartschedule.domain.errors.employee_error.EmployeeError
-import com.example.smartschedule.domain.errors.user_error.UserError
+import com.example.smartschedule.core.domain.errors.employee_error.EmployeeError
+import com.example.smartschedule.core.domain.errors.user_error.UserError
+import com.example.smartschedule.core.domain.common.*
 import com.google.common.truth.FailureMetadata
 import com.google.common.truth.Subject
 import com.google.common.truth.Truth.assertAbout
+import kotlin.jvm.java
 
 
 // ==============================================================================

@@ -1,7 +1,6 @@
 package com.example.smartschedule.domain.validation
 
-import com.example.smartschedule.domain.models.Shift
-import com.example.smartschedule.domain.models.ShiftType
+import com.example.smartschedule.core.domain.validation.ShiftValidation
 import com.example.smartschedule.testutils.TestDataFactory
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test

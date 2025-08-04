@@ -3,6 +3,8 @@ package com.example.smartschedule.domain.models
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
 import org.junit.Test
+import com.example.smartschedule.core.domain.common.*
+import com.example.smartschedule.core.domain.models.UserType
 
 class UserTypeTest {
 

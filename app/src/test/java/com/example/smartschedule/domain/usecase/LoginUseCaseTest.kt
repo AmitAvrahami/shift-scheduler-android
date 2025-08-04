@@ -1,17 +1,18 @@
 package com.example.smartschedule.domain.usecase
 
-import com.example.smartschedule.domain.repository.UserRepository
+import com.example.smartschedule.core.domain.repository.UserRepository
+import com.example.smartschedule.core.domain.usecase.LoginUseCase
+import com.example.smartschedule.core.domain.common.*
+import com.example.smartschedule.core.domain.errors.user_error.UserError
 import com.example.smartschedule.testutils.TestDataFactory
+import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import org.mockito.Mock
 import org.mockito.MockitoAnnotations
-import org.mockito.kotlin.whenever
-import com.example.smartschedule.domain.common.Result
-import com.example.smartschedule.domain.errors.user_error.UserError
-import com.google.common.truth.Truth.assertThat
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 
 class LoginUseCaseTest {
 

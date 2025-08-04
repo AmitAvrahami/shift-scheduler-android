@@ -1,10 +1,10 @@
 package com.example.smartschedule.domain.usecase
 
-import com.example.smartschedule.domain.common.Result
-import com.example.smartschedule.domain.errors.user_error.UserError
-import com.example.smartschedule.domain.models.UserType
-import com.example.smartschedule.domain.repository.UserRepository
-import com.example.smartschedule.domain.validation.ValidationResult
+import com.example.smartschedule.core.domain.repository.UserRepository
+import com.example.smartschedule.core.domain.usecase.RegisterUserUseCase
+import com.example.smartschedule.core.domain.common.*
+import com.example.smartschedule.core.domain.errors.user_error.UserError
+import com.example.smartschedule.core.domain.models.UserType
 import com.example.smartschedule.testutils.TestDataFactory
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage

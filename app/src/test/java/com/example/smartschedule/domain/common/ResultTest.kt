@@ -2,6 +2,8 @@ package com.example.smartschedule.domain.common
 
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
+import com.example.smartschedule.core.domain.common.*
+
 
 class ResultTest {
 

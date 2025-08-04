@@ -1,8 +1,8 @@
 package com.example.smartschedule.testutils.base
-import com.example.smartschedule.domain.common.Result
 import com.google.common.truth.Truth.assertThat
 import com.google.common.truth.Truth.assertWithMessage
 import kotlinx.coroutines.test.runTest
+import com.example.smartschedule.core.domain.common.*
 import org.junit.Before
 import org.mockito.MockitoAnnotations
 
