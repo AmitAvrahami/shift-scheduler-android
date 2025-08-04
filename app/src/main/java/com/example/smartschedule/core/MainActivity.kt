@@ -28,7 +28,6 @@ import com.example.smartschedule.core.presentation.auth.LoginScreen
 import com.example.smartschedule.core.presentation.dashboard.ManagerDashboard
 import com.example.smartschedule.core.presentation.employee.edit_employee_screen.EditEmployeeScreen
 import com.example.smartschedule.core.presentation.employee.employee_list_screen.EmployeeListScreen
-import com.example.smartschedule.core.presentation.employee.viewmodel.AddEmployeeViewModel
 import com.example.smartschedule.core.presentation.navigation.Routes
 import com.example.smartschedule.core.presentation.shift.AddShiftScreen
 import com.example.smartschedule.core.presentation.shift.EditShiftScreen
@@ -89,7 +88,6 @@ class MainActivity : ComponentActivity() {
                 //View Models
                 val loginViewModel: LoginViewModel = hiltViewModel()
                 val addUserViewModel: AddUserViewModel = hiltViewModel()
-                val addEmployeeViewModel: AddEmployeeViewModel = hiltViewModel()
 
                 // TODO: These will be replaced with ViewModels later
                 var employees by remember { mutableStateOf(listOf<Employee>()) }
