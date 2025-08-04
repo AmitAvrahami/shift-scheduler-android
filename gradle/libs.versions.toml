@@ -1,5 +1,5 @@
 [versions]
-agp = "8.11.1"
+agp = "8.12.0"
 composeBomVersion = "2023.10.01"
 coreTesting = "2.2.0"
 hiltAndroid = "2.57"
@@ -20,6 +20,7 @@ roomCompiler = "2.7.2"
 roomRuntime = "2.7.2"
 tablerIcons = "1.1.1"
 truth = "1.4.4"
+adsMobileSdk = "0.18.0-beta01"
 
 [libraries]
 androidx-compose-bom-v20231001 = { module = "androidx.compose:compose-bom", version.ref = "composeBomVersion" }
@@ -55,6 +56,7 @@ tabler-icons = { module = "br.com.devsrsouza.compose.icons:tabler-icons", versio
 truth = { module = "com.google.truth:truth", version.ref = "truth" }
 ui = { module = "androidx.compose.ui:ui" }
 ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
+ads-mobile-sdk = { group = "com.google.android.libraries.ads.mobile.sdk", name = "ads-mobile-sdk", version.ref = "adsMobileSdk" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

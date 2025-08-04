@@ -1,5 +1,10 @@
 package com.example.smartschedule.testutils
 
+import com.example.smartschedule.core.domain.models.Employee
+import com.example.smartschedule.core.domain.models.Shift
+import com.example.smartschedule.core.domain.models.ShiftType
+import com.example.smartschedule.core.domain.models.UserStatus
+import com.example.smartschedule.core.domain.models.UserType
 import com.example.smartschedule.domain.models.*
 import java.time.LocalDateTime
 import java.util.UUID
@@ -12,8 +17,8 @@ object TestDataFactory {
         email: String = "amit@test.com",
         type: UserType = UserType.EMPLOYEE,
         status: UserStatus = UserStatus.ACTIVE
-    ): User {
-        return User(
+    ): com.example.smartschedule.core.domain.models.User {
+        return _root_ide_package_.com.example.smartschedule.core.domain.models.User(
             id = id,
             name = name,
             email = email,
@@ -78,13 +83,13 @@ object TestDataFactory {
         shiftType = ShiftType.NIGHT
     )
 
-    fun createAdminUser(): User = createUser(
+    fun createAdminUser(): com.example.smartschedule.core.domain.models.User = createUser(
         name = "מנהל ראשי",
         email = "admin@test.com",
         type = UserType.ADMIN
     )
 
-    fun createManagerUser(): User = createUser(
+    fun createManagerUser(): com.example.smartschedule.core.domain.models.User = createUser(
         name = "מנהל משמרת",
         email = "manager@test.com",
         type = UserType.MANAGER

@@ -1,7 +1,6 @@
 package com.example.smartschedule
 
 import android.app.Application
-import com.example.smartschedule.core.utils.DataSeeder
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -11,15 +10,4 @@ import javax.inject.Inject
 @HiltAndroidApp
 class HiltApplication : Application() {
 
-    @Inject
-    lateinit var  dataSeeder : DataSeeder
-
-    override fun onCreate() {
-        super.onCreate()
-
-        CoroutineScope(Dispatchers.IO).launch {
-            dataSeeder.seedInitialData()
-        }
-
-    }
 }

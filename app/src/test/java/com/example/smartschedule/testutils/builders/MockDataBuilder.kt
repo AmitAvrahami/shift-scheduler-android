@@ -2,14 +2,19 @@
 
 package com.example.smartschedule.testutils.builders
 
-import com.example.smartschedule.data.database.dao.UserDao
-import com.example.smartschedule.data.database.dao.EmployeeDao
-import com.example.smartschedule.data.database.dao.ShiftDao
-import com.example.smartschedule.data.database.entities.UserEntity
-import com.example.smartschedule.data.database.entities.EmployeeEntity
-import com.example.smartschedule.data.database.entities.ShiftEntity
+import com.example.smartschedule.core.data.database.dao.EmployeeDao
+import com.example.smartschedule.core.data.database.dao.ShiftDao
+import com.example.smartschedule.core.data.database.dao.UserDao
+import com.example.smartschedule.core.data.database.entities.EmployeeEntity
+import com.example.smartschedule.core.data.database.entities.ShiftEntity
+import com.example.smartschedule.core.data.database.entities.UserEntity
 import kotlinx.coroutines.flow.flowOf
-import org.mockito.kotlin.*
+import org.mockito.kotlin.any
+import org.mockito.kotlin.doAnswer
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
+import org.mockito.kotlin.wheneverBlocking
 
 object MockDataBuilder {
 
