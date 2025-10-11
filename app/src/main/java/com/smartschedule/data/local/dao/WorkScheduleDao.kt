@@ -3,6 +3,9 @@ package com.smartschedule.data.local.dao
 import androidx.room.*
 import com.smartschedule.data.local.entities.WorkScheduleEntity
 
+/**
+ * Data Access Object for the work_schedules table.
+ */
 @Dao
 interface WorkScheduleDao {
 

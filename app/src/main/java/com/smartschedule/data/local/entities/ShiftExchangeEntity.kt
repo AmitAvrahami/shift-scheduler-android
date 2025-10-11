@@ -6,6 +6,9 @@ import androidx.room.PrimaryKey
 import com.smartschedule.domain.models.ExchangeStatus
 import java.time.LocalDateTime
 
+/**
+ * Represents a shift exchange request in the database.
+ */
 @Entity(tableName = "shift_exchanges")
 data class ShiftExchangeEntity(
 

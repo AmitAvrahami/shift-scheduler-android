@@ -3,6 +3,9 @@ package com.smartschedule.data.local.dao
 import androidx.room.*
 import com.smartschedule.data.local.entities.ConstraintEntity
 
+/**
+ * Data Access Object for the constraints table.
+ */
 @Dao
 interface ConstraintDao {
 
@@ -17,6 +20,9 @@ interface ConstraintDao {
 
     @Query("SELECT * FROM constraints")
     suspend fun getAllConstraints(): List<ConstraintEntity>
+
+    @Query("SELECT * FROM constraints WHERE id = :id")
+    suspend fun getConstraintById(id: Long): ConstraintEntity?
 
     @Query("SELECT * FROM constraints WHERE employee_id = :employeeId")
     suspend fun getConstraintsByEmployee(employeeId: Long): List<ConstraintEntity>

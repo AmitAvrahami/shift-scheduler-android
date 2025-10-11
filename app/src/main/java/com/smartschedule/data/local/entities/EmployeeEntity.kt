@@ -5,6 +5,9 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.smartschedule.domain.models.UserRole
 
+/**
+ * Represents an employee in the database.
+ */
 @Entity(tableName = "employees")
 data class EmployeeEntity(
     @PrimaryKey(autoGenerate = true)

@@ -6,6 +6,9 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import java.time.LocalDateTime
 
+/**
+ * Represents the assignment of an employee to a specific shift in the database.
+ */
 @Entity(tableName = "shift_assignments")
 data class ShiftAssignmentEntity(
 

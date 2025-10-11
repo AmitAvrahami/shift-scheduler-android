@@ -8,6 +8,9 @@ import com.smartschedule.domain.models.ShiftType
 import java.time.DayOfWeek
 import java.time.LocalDate
 
+/**
+ * Represents a recurring constraint for an employee in the database.
+ */
 @Entity(tableName = "recurring_constraints")
 data class RecurringConstraintEntity(
 

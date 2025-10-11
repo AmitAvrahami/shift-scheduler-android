@@ -7,6 +7,9 @@ import androidx.room.PrimaryKey
 import com.smartschedule.domain.models.ShiftType
 import java.time.DayOfWeek
 
+/**
+ * Represents a template for creating shifts in the database.
+ */
 @Entity(tableName = "shift_templates")
 data class ShiftTemplateEntity(
 

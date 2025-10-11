@@ -6,6 +6,9 @@ import androidx.room.PrimaryKey
 import com.smartschedule.domain.models.ShiftType
 import java.time.DayOfWeek
 
+/**
+ * Represents a standing assignment for an employee in the database.
+ */
 @Entity(tableName = "standing_assignments")
 data class StandingAssignmentEntity(
 

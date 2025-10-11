@@ -8,6 +8,9 @@ import com.smartschedule.domain.models.ScheduleStatus
 import java.time.LocalDate
 import java.time.LocalDateTime
 
+/**
+ * Represents a work schedule for a specific week in the database.
+ */
 @Entity(tableName = "work_schedules")
 data class WorkScheduleEntity(
 

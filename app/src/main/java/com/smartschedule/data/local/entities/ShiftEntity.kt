@@ -6,6 +6,9 @@ import androidx.room.PrimaryKey
 import com.smartschedule.domain.models.ShiftType
 import java.time.LocalDate
 
+/**
+ * Represents a single shift in the database.
+ */
 @Entity(tableName = "shifts")
 data class ShiftEntity(
 

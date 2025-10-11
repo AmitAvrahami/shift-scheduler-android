@@ -4,9 +4,13 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.smartschedule.domain.models.ConstraintType
+import com.smartschedule.domain.models.ShiftType
 import java.time.LocalDate
 import java.time.LocalTime
 
+/**
+ * Represents a constraint in the database.
+ */
 @Entity(tableName = "constraints")
 data class ConstraintEntity(
 
@@ -29,8 +33,14 @@ data class ConstraintEntity(
     @ColumnInfo(name = "end_time")
     val endTime: LocalTime? = null,
 
+    @ColumnInfo("shift_type")
+    val shiftType: ShiftType? = null,
+
+
     @ColumnInfo(name = "type")
     val type: ConstraintType,
+
+
 
     @ColumnInfo(name = "reason")
     val reason: String? = null
