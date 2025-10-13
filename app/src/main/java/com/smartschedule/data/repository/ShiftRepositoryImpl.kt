@@ -20,6 +20,8 @@ class ShiftRepositoryImpl(
     override suspend fun insertShift(shift: Shift) {
         shiftDao.insertShift(shift.toEntity())
     }
+    override suspend fun insertShifts(shifts: List<Shift>) =
+        shiftDao.insertShifts(shifts.map { it.toEntity() })
 
     override suspend fun updateShift(shift: Shift) {
         shiftDao.updateShift(shift.toEntity())

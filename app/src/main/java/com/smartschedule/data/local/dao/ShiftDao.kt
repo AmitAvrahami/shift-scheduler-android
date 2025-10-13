@@ -12,6 +12,9 @@ interface ShiftDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertShift(shift: ShiftEntity)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertShifts(shifts: List<ShiftEntity>)
+
     @Update
     suspend fun updateShift(shift: ShiftEntity)
 
