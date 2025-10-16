@@ -2,7 +2,6 @@ package com.smartschedule.test
 
 import com.smartschedule.domain.models.*
 import com.smartschedule.domain.repositories.*
-import com.smartschedule.domain.use_cases.schedule_context_use_case.BuildEmployeeContextUseCase
 import kotlinx.coroutines.runBlocking
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -168,35 +167,35 @@ class FakeShiftRepository : ShiftRepository {
     }
 }
 
-// -------------------- MAIN TEST -------------------- //
-
-fun main() = runBlocking {
-    val weekStart = LocalDate.of(2025, 10, 19)
-    val weekEnd = weekStart.plusDays(6)
-
-    val useCase = BuildEmployeeContextUseCase(
-        employeeRepo = FakeEmployeeRepository(),
-        constraintRepo = FakeConstraintRepository(),
-        recurringRepo = FakeRecurringConstraintRepository(),
-        assignmentRepo = FakeShiftAssignmentRepository(),
-        shiftRepo = FakeShiftRepository()
-    )
-
-    val contexts = useCase.buildForWeek(weekStart, weekEnd)
-
-    println("======= תוצאות בדיקה =======")
-    contexts.forEach { ctx ->
-        println("\n👤 עובד: ${ctx.employee.name}")
-        println("• אילוצים: ${ctx.constraints.size}")
-        println("• אילוצים קבועים: ${ctx.recurringConstraints.size}")
-        println("• משמרות שובצו: ${ctx.assignedShifts.size}")
-        println("• משמרות זמינות לשבוע: ${ctx.availableShifts.size}")
-        println("• יכול לעבוד ביום רביעי צהריים? ${
-            ctx.canWork(
-                ctx.availableShifts.firstOrNull {
-                    it.date.dayOfWeek == DayOfWeek.WEDNESDAY && it.shiftType == ShiftType.NOON
-                } ?: return@forEach
-            )
-        }")
-    }
-}
+//// -------------------- MAIN TEST -------------------- //
+//
+//fun main() = runBlocking {
+//    val weekStart = LocalDate.of(2025, 10, 19)
+//    val weekEnd = weekStart.plusDays(6)
+//
+//    val useCase = BuildEmployeeContextUseCase(
+//        employeeRepo = FakeEmployeeRepository(),
+//        constraintRepo = FakeConstraintRepository(),
+//        recurringRepo = FakeRecurringConstraintRepository(),
+//        assignmentRepo = FakeShiftAssignmentRepository(),
+//        shiftRepo = FakeShiftRepository()
+//    )
+//
+//    val contexts = useCase.buildForWeek(weekStart, weekEnd)
+//
+//    println("======= תוצאות בדיקה =======")
+//    contexts.forEach { ctx ->
+//        println("\n👤 עובד: ${ctx.employee.name}")
+//        println("• אילוצים: ${ctx.constraints.size}")
+//        println("• אילוצים קבועים: ${ctx.recurringConstraints.size}")
+//        println("• משמרות שובצו: ${ctx.assignedShifts.size}")
+//        println("• משמרות זמינות לשבוע: ${ctx.availableShifts.size}")
+//        println("• יכול לעבוד ביום רביעי צהריים? ${
+//            ctx.canWork(
+//                ctx.availableShifts.firstOrNull {
+//                    it.date.dayOfWeek == DayOfWeek.WEDNESDAY && it.shiftType == ShiftType.NOON
+//                } ?: return@forEach
+//            )
+//        }")
+//    }
+//}
