@@ -1,11 +1,14 @@
 package com.smartschedule.data.local.dao
 
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Update
 import com.smartschedule.data.local.entities.ConstraintEntity
+import java.time.LocalDate
 
-/**
- * Data Access Object for the constraints table.
- */
 @Dao
 interface ConstraintDao {
 
@@ -24,6 +27,6 @@ interface ConstraintDao {
     @Query("SELECT * FROM constraints WHERE id = :id")
     suspend fun getConstraintById(id: Long): ConstraintEntity?
 
-    @Query("SELECT * FROM constraints WHERE employee_id = :employeeId")
-    suspend fun getConstraintsByEmployee(employeeId: Long): List<ConstraintEntity>
+    @Query("SELECT * FROM constraints WHERE employee_id = :employeeId AND start_date >= :weekStart AND end_date <= :weekEnd")
+    suspend fun getForEmployee(employeeId: Long, weekStart: LocalDate, weekEnd: LocalDate): List<ConstraintEntity>
 }

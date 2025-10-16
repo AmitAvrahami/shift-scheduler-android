@@ -13,11 +13,6 @@ data class Employee(
     val userRole : UserRole,
     val notes : String? = null,
 ){
-    init {
-        require(name.isNotBlank()) { "Employee.name must not be blank" }
-        require(maxShiftsPerWeek in Constants.MIN_SHIFT_PER_WEEK..Constants.MAX_SHIFT_PER_WEEK) {
-            "maxShiftsPerWeek must be within [${Constants.MIN_SHIFT_PER_WEEK}..${Constants.MAX_SHIFT_PER_WEEK}]"
-        }
-    }
+
 }
 

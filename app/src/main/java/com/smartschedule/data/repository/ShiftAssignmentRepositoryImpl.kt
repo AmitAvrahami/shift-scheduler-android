@@ -5,6 +5,7 @@ import com.smartschedule.data.mappers.toDomain
 import com.smartschedule.data.mappers.toEntity
 import com.smartschedule.domain.models.ShiftAssignment
 import com.smartschedule.domain.repositories.ShiftAssignmentRepository
+import java.time.LocalDate
 
 class ShiftAssignmentRepositoryImpl(
     private val shiftAssignmentDao: ShiftAssignmentDao
@@ -27,5 +28,13 @@ class ShiftAssignmentRepositoryImpl(
 
     override suspend fun deleteShiftAssignment(shiftAssignment: ShiftAssignment) {
         shiftAssignmentDao.deleteShiftAssignment(shiftAssignment.toEntity())
+    }
+
+    override suspend fun getForEmployee(
+        employeeId: Long,
+        weekStart: LocalDate,
+        weekEnd: LocalDate
+    ): List<ShiftAssignment> {
+        return shiftAssignmentDao.getForEmployee(employeeId, weekStart, weekEnd).map { it.toDomain() }
     }
 }

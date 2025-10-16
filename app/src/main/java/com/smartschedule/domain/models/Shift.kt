@@ -12,10 +12,11 @@ data class Shift(
     val requiredHeadcount: Int,
     val notes: String? = null
 ){
+
     init {
         require(id >= 0L) { "id must be >= 0" }
-        require(workScheduleId > 0L) { "workScheduleId must be > 0" }
-        require(requiredHeadcount >= 1) { "requiredHeadcount must be >= 1" }
+        require(workScheduleId >= 0L) { "workScheduleId must be >= 0" }
+        require(requiredHeadcount > 0) { "requiredHeadcount must be > 0" }
     }
 
     val startTime: LocalTime = when (shiftType) {

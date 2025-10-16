@@ -28,4 +28,8 @@ class RecurringConstraintRepositoryImpl(
     override suspend fun deleteRecurringConstraint(recurringConstraint: RecurringConstraint) {
         recurringConstraintDao.deleteRecurringConstraint(recurringConstraint.toEntity())
     }
+
+    override suspend fun getForEmployee(employeeId: Long): List<RecurringConstraint> {
+        return recurringConstraintDao.getForEmployee(employeeId).map { it.toDomain() }
+    }
 }

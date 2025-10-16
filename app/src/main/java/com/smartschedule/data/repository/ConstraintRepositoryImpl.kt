@@ -5,6 +5,7 @@ import com.smartschedule.data.mappers.toDomain
 import com.smartschedule.data.mappers.toEntity
 import com.smartschedule.domain.models.Constraint
 import com.smartschedule.domain.repositories.ConstraintRepository
+import java.time.LocalDate
 
 class ConstraintRepositoryImpl(
     private val constraintDao: ConstraintDao
@@ -27,5 +28,13 @@ class ConstraintRepositoryImpl(
 
     override suspend fun deleteConstraint(constraint: Constraint) {
         constraintDao.deleteConstraint(constraint.toEntity())
+    }
+
+    override suspend fun getForEmployee(
+        employeeId: Long,
+        weekStart: LocalDate,
+        weekEnd: LocalDate
+    ): List<Constraint> {
+        return constraintDao.getForEmployee(employeeId, weekStart, weekEnd).map { it.toDomain() }
     }
 }

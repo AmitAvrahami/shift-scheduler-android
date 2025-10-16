@@ -19,7 +19,7 @@ data class WorkScheduleEntity(
     val id: Long = 0L,
 
     @ColumnInfo(name = "week_start_date")
-    val weekStartDate: LocalDate,
+    val weekStartDate: LocalDate?,
 
     @ColumnInfo(name = "status")
     val status: ScheduleStatus,

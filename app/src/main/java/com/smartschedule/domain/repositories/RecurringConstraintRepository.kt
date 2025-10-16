@@ -8,4 +8,5 @@ interface RecurringConstraintRepository {
     suspend fun insertRecurringConstraint(recurringConstraint: RecurringConstraint)
     suspend fun updateRecurringConstraint(recurringConstraint: RecurringConstraint)
     suspend fun deleteRecurringConstraint(recurringConstraint: RecurringConstraint)
+    suspend fun getForEmployee(employeeId: Long): List<RecurringConstraint>
 }

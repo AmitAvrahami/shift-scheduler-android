@@ -5,6 +5,7 @@ import com.smartschedule.data.mappers.toDomain
 import com.smartschedule.data.mappers.toEntity
 import com.smartschedule.domain.models.Shift
 import com.smartschedule.domain.repositories.ShiftRepository
+import java.time.LocalDate
 
 class ShiftRepositoryImpl(
     private val shiftDao: ShiftDao
@@ -29,5 +30,19 @@ class ShiftRepositoryImpl(
 
     override suspend fun deleteShift(shift: Shift) {
         shiftDao.deleteShift(shift.toEntity())
+    }
+
+    override suspend fun getAvailableShifts(
+        weekStart: LocalDate,
+        weekEnd: LocalDate
+    ): List<Shift> {
+        return shiftDao.getAvailableShifts(weekStart, weekEnd).map { it.toDomain() }
+    }
+
+    override suspend fun getShiftsBetween(
+        start: LocalDate,
+        end: LocalDate
+    ): List<Shift> {
+        return shiftDao.getShiftsBetween(start, end).map { it.toDomain() }
     }
 }

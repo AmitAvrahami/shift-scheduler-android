@@ -2,6 +2,7 @@ package com.smartschedule.data.local.dao
 
 import androidx.room.*
 import com.smartschedule.data.local.entities.ShiftAssignmentEntity
+import java.time.LocalDate
 
 /**
  * Data Access Object for the shift_assignments table.
@@ -29,4 +30,7 @@ interface ShiftAssignmentDao {
 
     @Query("SELECT * FROM shift_assignments WHERE employee_id = :employeeId")
     suspend fun getAssignmentsByEmployee(employeeId: Long): List<ShiftAssignmentEntity>
+    
+    @Query("SELECT sa.* FROM shift_assignments sa JOIN shifts s ON sa.shift_id = s.id WHERE sa.employee_id = :employeeId AND s.date BETWEEN :startWeek AND :endWeek")
+    suspend fun getForEmployee(employeeId: Long, startWeek: LocalDate, endWeek: LocalDate): List<ShiftAssignmentEntity>
 }
